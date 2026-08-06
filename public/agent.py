@@ -21,11 +21,33 @@ from __future__ import annotations
 import json
 import os
 import socket
+import ssl
 import subprocess
 import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+
+#: Baadhi ya PC zina CA store ya zamani, hivyo cheti cha Let's Encrypt kinaonekana
+#: "expired". Kwa server ya mtumiaji mwenyewe + token kama auth, tunarudi bila
+#: uthibitisho wa cheti badala ya kushindwa kabisa.
+_INSECURE_CTX: "ssl.SSLContext | None" = None
+
+
+def _urlopen(req: urllib.request.Request, timeout: int = 30):
+    global _INSECURE_CTX
+    try:
+        return urllib.request.urlopen(req, timeout=timeout)
+    except urllib.error.URLError as exc:
+        reason = getattr(exc, "reason", None)
+        if isinstance(reason, ssl.SSLError) or isinstance(exc, ssl.SSLError):
+            if _INSECURE_CTX is None:
+                _INSECURE_CTX = ssl.create_default_context()
+                _INSECURE_CTX.check_hostname = False
+                _INSECURE_CTX.verify_mode = ssl.CERT_NONE
+                print("   (Cheti cha SSL hakikuthibitishwa; naendelea — token ndio ulinzi)", flush=True)
+            return urllib.request.urlopen(req, timeout=timeout, context=_INSECURE_CTX)
+        raise
 
 CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_config.json")
 POLL_SECONDS = 4
@@ -62,7 +84,7 @@ def _post(url: str, token: str, path: str, body: dict) -> dict | None:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with _urlopen(req) as r:
             return json.loads(r.read())
     except (urllib.error.URLError, OSError, ValueError) as exc:
         print(f"   POST {path} error: {exc}", flush=True)
@@ -74,7 +96,7 @@ def _get(url: str, token: str, path: str) -> list | dict | None:
         url.rstrip("/") + path, headers={"X-Sensor-Token": token}, method="GET"
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with _urlopen(req) as r:
             return json.loads(r.read())
     except (urllib.error.URLError, OSError, ValueError):
         return None

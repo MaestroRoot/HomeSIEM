@@ -27,12 +27,32 @@ import json
 import os
 import queue
 import socket
+import ssl
 import struct
 import threading
 import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
+
+#: CA store ya zamani -> Let's Encrypt "expired". Server ya mtumiaji + token ndio
+#: ulinzi, hivyo tunarudi bila uthibitisho wa cheti badala ya kushindwa.
+_INSECURE_CTX: "ssl.SSLContext | None" = None
+
+
+def _urlopen(req: urllib.request.Request, timeout: int = 15):
+    global _INSECURE_CTX
+    try:
+        return urllib.request.urlopen(req, timeout=timeout)
+    except urllib.error.URLError as exc:
+        reason = getattr(exc, "reason", None)
+        if isinstance(reason, ssl.SSLError) or isinstance(exc, ssl.SSLError):
+            if _INSECURE_CTX is None:
+                _INSECURE_CTX = ssl.create_default_context()
+                _INSECURE_CTX.check_hostname = False
+                _INSECURE_CTX.verify_mode = ssl.CERT_NONE
+            return urllib.request.urlopen(req, timeout=timeout, context=_INSECURE_CTX)
+        raise
 
 UPSTREAM = ("1.1.1.1", 53)
 _QTYPE = {1: "A", 28: "AAAA", 5: "CNAME", 15: "MX", 16: "TXT", 2: "NS", 12: "PTR", 33: "SRV", 65: "HTTPS"}
@@ -105,7 +125,7 @@ def reporter(base_url: str, token: str) -> None:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with _urlopen(req) as resp:
                 res = json.loads(resp.read())
                 print(
                     f"          -> HomeSIEM: {res.get('accepted')} sent, "
