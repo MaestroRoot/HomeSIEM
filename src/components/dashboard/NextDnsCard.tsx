@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Check, Copy, Globe, Loader2, Trash2 } from 'lucide-react'
+import QRCode from 'qrcode'
+import { Check, Copy, Globe, Loader2, Smartphone, Trash2 } from 'lucide-react'
 import { SectionCard, StatusPill } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
 import type { NextDnsConfig } from '@/lib/types'
+
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1') as string
+function appleProfileUrl(profileId: string): string {
+  const base = API_BASE.startsWith('http') ? API_BASE : `${window.location.origin}${API_BASE}`
+  return `${base}/nextdns/apple/${profileId}`
+}
 
 function CopyRow({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -29,6 +36,17 @@ export default function NextDnsCard() {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [qr, setQr] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (config?.configured && config.profileId) {
+      QRCode.toDataURL(appleProfileUrl(config.profileId), { margin: 1, width: 200 })
+        .then(setQr)
+        .catch(() => setQr(null))
+    } else {
+      setQr(null)
+    }
+  }, [config?.configured, config?.profileId])
 
   async function load() {
     try {
@@ -86,14 +104,28 @@ export default function NextDnsCard() {
               <span className="text-sm text-slate-600">Profile <span className="font-mono">{config!.profileId}</span> · key {config!.apiKeyMasked}</span>
             </div>
 
-            <div>
-              <p className="mb-1.5 text-sm font-semibold text-slate-700">On each phone, set this as the Private DNS:</p>
-              <CopyRow text={config!.dnsHostname ?? ''} />
-              <ul className="mt-2 space-y-1 text-xs text-slate-500">
-                <li><span className="font-semibold text-slate-600">Android:</span> Settings → Network → Private DNS → “provider hostname” → paste above.</li>
-                <li><span className="font-semibold text-slate-600">iPhone / Mac:</span> my.nextdns.io → Setup → Apple → install profile.</li>
-                <li>Use the <span className="font-semibold">hostname</span>, not an IP. Every domain the device looks up then appears in HomeSIEM.</li>
-              </ul>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* iPhone: scan-to-install */}
+              <div className="rounded-xl border border-slate-200 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <Smartphone size={15} className="text-brand-600" /> iPhone — scan &amp; install
+                </div>
+                {qr ? (
+                  <img src={qr} alt="Install QR" className="mx-auto h-40 w-40 rounded-lg" />
+                ) : (
+                  <div className="mx-auto grid h-40 w-40 place-items-center text-slate-300"><Loader2 size={18} className="animate-spin" /></div>
+                )}
+                <p className="mt-2 text-xs text-slate-500">Open the iPhone <span className="font-semibold">Camera</span>, point at the QR, tap the link, then <span className="font-semibold">Settings → Install</span> the profile. No app, no login.</p>
+              </div>
+
+              {/* Android: Private DNS hostname */}
+              <div className="rounded-xl border border-slate-200 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <Smartphone size={15} className="text-brand-600" /> Android — Private DNS
+                </div>
+                <CopyRow text={config!.dnsHostname ?? ''} />
+                <p className="mt-2 text-xs text-slate-500">Settings → Network → <span className="font-semibold">Private DNS</span> → “provider hostname” → paste the above. Use the hostname, not an IP.</p>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
