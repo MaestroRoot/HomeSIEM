@@ -1,0 +1,100 @@
+import { useEffect, useState } from 'react'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Radio } from 'lucide-react'
+import Sidebar from './Sidebar'
+import Topbar from './Topbar'
+import PlanGate from './PlanGate'
+import { useAuth } from '@/context/AuthContext'
+import { SubscriptionProvider } from '@/context/SubscriptionContext'
+import { CollectorProvider, useCollector } from '@/context/CollectorContext'
+import { ThemeProvider } from '@/context/ThemeContext'
+import { CommandPalette, KeyboardHelp } from './CommandPalette'
+import Onboarding from './Onboarding'
+
+export default function DashboardLayout() {
+  const { user, loading } = useAuth()
+  const [navOpen, setNavOpen] = useState(false)
+  const location = useLocation()
+
+  if (loading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-white">
+        <div className="flex flex-col items-center gap-3">
+          <span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+          <p className="text-sm text-slate-500">Loading your Home SOC…</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
+
+  return (
+    <ThemeProvider>
+      <SubscriptionProvider>
+        <CollectorProvider>
+          <DashboardShell navOpen={navOpen} setNavOpen={setNavOpen} />
+        </CollectorProvider>
+      </SubscriptionProvider>
+    </ThemeProvider>
+  )
+}
+
+function DashboardShell({
+  navOpen,
+  setNavOpen,
+}: {
+  navOpen: boolean
+  setNavOpen: (open: boolean) => void
+}) {
+  const { connected } = useCollector()
+  const [paletteOpen, setPaletteOpen] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [onboard, setOnboard] = useState(() => !localStorage.getItem('homesiem-onboarded'))
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setPaletteOpen(true)
+      }
+      if (event.key === '?' && !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)) setHelpOpen(true)
+      if (event.key === 'Escape') {
+        setPaletteOpen(false)
+        setHelpOpen(false)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <Sidebar open={navOpen} onClose={() => setNavOpen(false)} />
+      <div className="lg:pl-[248px]">
+        <Topbar onMenu={() => setNavOpen(true)} onCommand={() => setPaletteOpen(true)} onHelp={() => setHelpOpen(true)} />
+        <main className="px-4 py-6 sm:px-6 lg:px-8">
+          {!connected && (
+            <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
+              <Radio size={17} className="mt-0.5 shrink-0 text-amber-600" />
+              <div className="text-sm text-amber-900">
+                <p className="font-semibold">No collector is connected yet.</p>
+                <p className="mt-0.5 text-amber-800">
+                  Every screen below is empty on purpose. Nothing here is simulated, so counts and
+                  charts stay at zero until a device starts shipping logs and packets. Connect a
+                  sensor on the Devices page to begin.
+                </p>
+              </div>
+            </div>
+          )}
+          <PlanGate>
+            <Outlet />
+          </PlanGate>
+        </main>
+      </div>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onHelp={() => { setPaletteOpen(false); setHelpOpen(true) }} />
+      <KeyboardHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <Onboarding open={onboard} onClose={() => { localStorage.setItem('homesiem-onboarded', '1'); setOnboard(false) }} />
+    </div>
+  )
+}

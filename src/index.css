@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-slate-800 antialiased;
+  }
+  ::selection {
+    @apply bg-brand-600 text-white;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
+           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow-lift active:bg-brand-800;
+  }
+  .btn-ghost {
+    @apply btn border border-brand-200 bg-white text-brand-700 hover:border-brand-400 hover:bg-brand-50;
+  }
+  .btn-soft {
+    @apply btn bg-brand-50 text-brand-700 hover:bg-brand-100;
+  }
+  .btn-danger {
+    @apply btn bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-card;
+  }
+  .card-pad {
+    @apply card p-5;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800
+           placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+
+  .section-title {
+    @apply text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1
+           text-xs font-semibold uppercase tracking-wider text-brand-700;
+  }
+
+  .table-base {
+    @apply w-full text-left text-sm;
+  }
+  .table-base thead th {
+    @apply whitespace-nowrap border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold
+           uppercase tracking-wider text-slate-500;
+  }
+  .table-base tbody td {
+    @apply border-b border-slate-100 px-4 py-3 text-slate-700;
+  }
+  .table-base tbody tr:hover {
+    @apply bg-brand-50/40;
+  }
+
+  .grid-bg {
+    background-image: linear-gradient(rgba(37, 99, 235, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37, 99, 235, 0.07) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid #f1f5f9;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ============================================================
+   Dark mode.
+   The dashboard is styled with hard-coded Tailwind utilities
+   (bg-white, text-slate-900, ...). Rather than edit every page,
+   we remap those specific utilities under `.dark`, which the
+   ThemeProvider toggles on <html>. `.dark .x` outranks `.x`, so
+   no !important is needed.
+   ============================================================ */
+.dark body {
+  background-color: #000000;
+  color: #d4d4d4;
+}
+
+/* surfaces (true black / neutral gray, no blue tint) */
+.dark .bg-white,
+.dark .bg-white\/90,
+.dark .bg-white\/80 { background-color: #0e0e0e; }
+.dark .bg-slate-50,
+.dark .bg-slate-50\/60,
+.dark .bg-slate-50\/70 { background-color: #050505; }
+.dark .bg-slate-100 { background-color: #1c1c1c; }
+
+/* text (neutral grays) */
+.dark .text-slate-900 { color: #f5f5f5; }
+.dark .text-slate-800 { color: #e5e5e5; }
+.dark .text-slate-700 { color: #d4d4d4; }
+.dark .text-slate-600 { color: #b0b0b0; }
+.dark .text-slate-500 { color: #8f8f8f; }
+.dark .text-slate-400 { color: #6b6b6b; }
+
+/* borders / rings / dividers */
+.dark .border-slate-200,
+.dark .border-slate-300 { border-color: #2a2a2a; }
+.dark .border-slate-100 { border-color: #1e1e1e; }
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #1e1e1e; }
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: #2a2a2a; }
+.dark .ring-slate-200 { --tw-ring-color: #2a2a2a; }
+
+/* hovers (neutral) */
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover { background-color: #1a1a1a; }
+
+/* soft/active surfaces: neutral gray, not blue. Accent stays only in text. */
+.dark .bg-brand-50,
+.dark .bg-brand-50\/40,
+.dark .bg-brand-50\/50,
+.dark .hover\:bg-brand-50:hover { background-color: #1c1c1c; }
+.dark .text-brand-700 { color: #93c5fd; }
+.dark .text-brand-900 { color: #dbeafe; }
+.dark .ring-brand-200 { --tw-ring-color: #333333; }
+
+/* custom component classes */
+.dark .card { background-color: #0e0e0e; border-color: #2a2a2a; }
+.dark .input {
+  background-color: #0e0e0e;
+  border-color: #333333;
+  color: #e5e5e5;
+}
+.dark .input::placeholder { color: #6b6b6b; }
+.dark .label { color: #d4d4d4; }
+.dark .btn-ghost {
+  background-color: #0e0e0e;
+  border-color: #333333;
+  color: #93c5fd;
+}
+.dark .table-base thead th {
+  background-color: #050505;
+  border-color: #2a2a2a;
+  color: #8f8f8f;
+}
+.dark .table-base tbody td { border-color: #1e1e1e; color: #d4d4d4; }
+.dark .table-base tbody tr:hover { background-color: #161616; }
+
+/* dark scrollbars */
+.dark ::-webkit-scrollbar-track { background: #000000; }
+.dark ::-webkit-scrollbar-thumb { background: #333333; border-color: #000000; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #4d4d4d; }
