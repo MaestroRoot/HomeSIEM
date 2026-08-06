@@ -8,6 +8,9 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/ap
 //: Script za sensor zinahudumiwa kutoka origin ile ile ya app (folda ya
 //: `public/`), mfano https://home-siem.vercel.app/agent.py
 const DOWNLOAD_BASE = typeof window !== 'undefined' ? window.location.origin : ''
+//: Agent ni program ya nje (si browser), kwa hiyo HOMESIEM_URL LAZIMA iwe
+//: kamili. VITE_API_BASE_URL ikiwa relative (mfano /api/v1), iunganishe na origin.
+const API_ABS = API_BASE.startsWith('http') ? API_BASE : `${DOWNLOAD_BASE}${API_BASE}`
 
 function agentOnline(a: AgentRecord): boolean {
   return a.lastSeenAt ? Date.now() - new Date(a.lastSeenAt).getTime() < 30000 : false
@@ -80,8 +83,8 @@ export default function Agents() {
   }
 
   const tok = token?.token ?? '<paste your token>'
-  const agentCmd = `$env:HOMESIEM_URL="${API_BASE}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/agent.py -OutFile agent.py\npython agent.py`
-  const resolverCmd = `$env:HOMESIEM_URL="${API_BASE}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/resolver.py -OutFile resolver.py\npython resolver.py`
+  const agentCmd = `$env:HOMESIEM_URL="${API_ABS}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/agent.py -OutFile agent.py\npython agent.py`
+  const resolverCmd = `$env:HOMESIEM_URL="${API_ABS}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/resolver.py -OutFile resolver.py\npython resolver.py`
 
   return (
     <div className="space-y-6">
