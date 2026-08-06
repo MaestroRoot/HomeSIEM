@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, Copy, Cpu, KeyRound, Loader2, Radio, ShieldCheck, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
-import NextDnsCard from '@/components/dashboard/NextDnsCard'
+import CloudflareGatewayCard from '@/components/dashboard/CloudflareGatewayCard'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentRecord, SensorTokenCreated } from '@/lib/types'
@@ -127,8 +127,8 @@ export default function Agents() {
         </div>
       </SectionCard>
 
-      {/* Step 3: NextDNS integration (per-org, set up in the app) */}
-      <NextDnsCard />
+      {/* Step 3: Cloudflare Gateway integration (per-org, set up in the app) */}
+      <CloudflareGatewayCard />
 
       {/* Step 4: DNS resolver (advanced / self-hosted) */}
       <SectionCard title="4. Self-hosted DNS resolver (advanced, optional)" description="Alternative to NextDNS: run your own resolver on a host and point devices' DNS at it.">

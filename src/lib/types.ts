@@ -368,12 +368,13 @@ export interface CollectionStream {
   createdAt: string
 }
 
-export interface NextDnsConfig {
+export interface CloudflareGatewayConfig {
   configured: boolean
-  profileId: string | null
-  apiKeyMasked: string | null
+  accountId: string | null
+  locationId: string | null
+  locationName: string | null
+  dohHostname: string | null
   enabled: boolean
-  dnsHostname: string | null
   lastSyncedAt: string | null
   lastStatus: string | null
 }
