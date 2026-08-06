@@ -84,8 +84,8 @@ export default function Agents() {
   }
 
   const tok = token?.token ?? '<paste your token>'
-  const agentCmd = `$env:HOMESIEM_URL="${API_ABS}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/agent.py -OutFile agent.py\npython agent.py`
-  const resolverCmd = `$env:HOMESIEM_URL="${API_ABS}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/resolver.py -OutFile resolver.py\npython resolver.py`
+  const agentCmd = `$env:HOMESIEM_URL="${API_ABS}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\n$env:PYTHONHTTPSVERIFY="0"\nirm ${DOWNLOAD_BASE}/agent.py -OutFile agent.py\npython agent.py`
+  const resolverCmd = `$env:HOMESIEM_URL="${API_ABS}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\n$env:PYTHONHTTPSVERIFY="0"\nirm ${DOWNLOAD_BASE}/resolver.py -OutFile resolver.py\npython resolver.py`
 
   return (
     <div className="space-y-6">
