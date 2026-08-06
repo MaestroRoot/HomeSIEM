@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react'
 
 export default function Hero() {
   return (
-<section id="home" className="relative isolate overflow-hidden pt-[72px]">
+    <section id="home" className="relative isolate overflow-hidden pt-[72px] bg-slate-900">
       {/* video + overlay background */}
       <div className="absolute inset-0">
         <video
@@ -12,14 +12,12 @@ export default function Hero() {
           loop
           playsInline
           preload="auto"
-          className="absolute inset-0 h-full w-full object-cover"
+          poster="/hero-poster.svg"
+          className="absolute inset-0 h-full w-full object-cover opacity-60"
         >
-          <source
-            src="https://videos.pexels.com/video-files/7661517/7661517-hd_1280_720_25fps.mp4"
-            type="video/mp4"
-          />
+          <source src="/hero-bg.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-black/30" />
       </div>
 
       <div className="container-x relative z-10 mx-auto pb-24 pt-10 lg:pb-32 lg:pt-14">
