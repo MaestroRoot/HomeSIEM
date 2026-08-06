@@ -5,9 +5,9 @@ import { api, ApiError } from '@/lib/api'
 import type { AgentRecord, SensorTokenCreated } from '@/lib/types'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1') as string
-const AGENT = 'C:\\laragon\\www\\HomeSIEM\\sensor\\agent.py'
-const RESOLVER = 'C:\\laragon\\www\\HomeSIEM\\sensor\\resolver.py'
-const PY = 'C:\\laragon\\www\\HomeSIEM\\backend\\.venv\\Scripts\\python.exe'
+//: Script za sensor zinahudumiwa kutoka origin ile ile ya app (folda ya
+//: `public/`), mfano https://home-siem.vercel.app/agent.py
+const DOWNLOAD_BASE = typeof window !== 'undefined' ? window.location.origin : ''
 
 function agentOnline(a: AgentRecord): boolean {
   return a.lastSeenAt ? Date.now() - new Date(a.lastSeenAt).getTime() < 30000 : false
@@ -80,8 +80,8 @@ export default function Agents() {
   }
 
   const tok = token?.token ?? '<paste your token>'
-  const agentCmd = `$env:HOMESIEM_URL="${API_BASE}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\n${PY} ${AGENT}`
-  const resolverCmd = `$env:HOMESIEM_URL="${API_BASE}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\n${PY} ${RESOLVER}`
+  const agentCmd = `$env:HOMESIEM_URL="${API_BASE}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/agent.py -OutFile agent.py\npython agent.py`
+  const resolverCmd = `$env:HOMESIEM_URL="${API_BASE}"\n$env:HOMESIEM_SENSOR_TOKEN="${tok}"\nirm ${DOWNLOAD_BASE}/resolver.py -OutFile resolver.py\npython resolver.py`
 
   return (
     <div className="space-y-6">
@@ -112,11 +112,11 @@ export default function Agents() {
       </SectionCard>
 
       {/* Step 2: install agent */}
-      <SectionCard title="2. Install the agent (does everything)" description="Run once on the host. Enables scan, forensics, capture and log collection from the dashboard.">
+      <SectionCard title="2. Install the agent (does everything)" description="Run once on the host (Windows). It downloads the agent, enrolls, and stays running.">
         <div className="space-y-3 p-5">
-          <p className="text-sm text-slate-600">Forensics needs one dependency:</p>
-          <CopyBlock text={`${PY} -m pip install psutil`} />
-          <p className="text-sm text-slate-600">Then run the agent (in PowerShell, as administrator for full access):</p>
+          <p className="text-sm text-slate-600">You need <span className="font-semibold">Python 3</span> installed (python.org → “Add to PATH”). Then, for forensics, one dependency:</p>
+          <CopyBlock text={`python -m pip install psutil`} />
+          <p className="text-sm text-slate-600">Now open <span className="font-semibold">PowerShell</span> (as administrator for full access) and paste this — it downloads the agent and runs it:</p>
           <CopyBlock text={agentCmd} />
           <p className="text-xs text-slate-500">It enrolls once and keeps running. After this, use the Vulnerability Scanner, Forensics, Live Capture and Log Collection pages to trigger work on this host by clicking, no more commands.</p>
         </div>
