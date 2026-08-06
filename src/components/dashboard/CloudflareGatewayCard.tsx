@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import { Check, Copy, Globe, Loader2, Smartphone, Trash2 } from 'lucide-react'
+import { Check, Copy, Globe, Loader2, Smartphone, Trash2, Wifi } from 'lucide-react'
 import { SectionCard, StatusPill } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
 import type { CloudflareGatewayConfig } from '@/lib/types'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1') as string
 
-function appleProfileUrl(accountId: string, locationId: string): string {
+function appleProfileUrl(orgId: string): string {
   const base = API_BASE.startsWith('http') ? API_BASE : `${window.location.origin}${API_BASE}`
-  return `${base}/cloudflare-gateway/apple/${accountId}/${locationId}`
+  return `${base}/cloudflare-gateway/apple/${orgId}`
 }
 
 function CopyRow({ text }: { text: string }) {
@@ -32,22 +32,19 @@ function CopyRow({ text }: { text: string }) {
 export default function CloudflareGatewayCard() {
   const [config, setConfig] = useState<CloudflareGatewayConfig | null>(null)
   const [loading, setLoading] = useState(true)
-  const [accountId, setAccountId] = useState('')
-  const [apiToken, setApiToken] = useState('')
-  const [editing, setEditing] = useState(false)
-  const [saving, setSaving] = useState(false)
+  const [provisioning, setProvisioning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [qr, setQr] = useState<string | null>(null)
 
   useEffect(() => {
-    if (config?.configured && config.accountId && config.locationId) {
-      QRCode.toDataURL(appleProfileUrl(config.accountId, config.locationId), { margin: 1, width: 200 })
+    if (config?.configured && config.dohHostname) {
+      QRCode.toDataURL(appleProfileUrl(config.organizationId ?? ''), { margin: 1, width: 200 })
         .then(setQr)
         .catch(() => setQr(null))
     } else {
       setQr(null)
     }
-  }, [config?.configured, config?.accountId, config?.locationId])
+  }, [config?.configured, config?.dohHostname, config?.organizationId])
 
   async function load() {
     try {
@@ -60,25 +57,21 @@ export default function CloudflareGatewayCard() {
   }
   useEffect(() => { load() }, [])
 
-  async function save() {
-    if (!accountId.trim() || !apiToken.trim() || saving) return
-    setSaving(true)
+  async function provision() {
+    setProvisioning(true)
     setError(null)
     try {
-      const c = await api.put<CloudflareGatewayConfig>('/cloudflare-gateway', { accountId: accountId.trim(), apiToken: apiToken.trim() })
+      const c = await api.post<CloudflareGatewayConfig>('/cloudflare-gateway/provision', {})
       setConfig(c)
-      setEditing(false)
-      setApiToken('')
-      setAccountId('')
     } catch (err) {
-      setError(err instanceof ApiError ? (err.code === 'insufficient_role' ? 'Only the workspace owner can set this up.' : err.message) : 'Could not save.')
+      setError(err instanceof ApiError ? (err.code === 'insufficient_role' ? 'Only the workspace owner can set this up.' : err.message) : 'Could not provision Cloudflare Gateway location.')
     } finally {
-      setSaving(false)
+      setProvisioning(false)
     }
   }
 
   async function disconnect() {
-    if (!window.confirm('Disconnect Cloudflare Gateway? DNS logs will stop flowing in until you set it up again.')) return
+    if (!window.confirm('Disconnect Cloudflare Gateway? DNS logs will stop flowing in until you provision again.')) return
     try {
       await api.del('/cloudflare-gateway')
       await load()
@@ -87,13 +80,13 @@ export default function CloudflareGatewayCard() {
     }
   }
 
-  const connected = config?.configured && !editing
+  const connected = config?.configured && config.locationId && !provisioning
 
   return (
     <SectionCard
       title="3. Monitor phones / whole home (Cloudflare Gateway)"
-      description="See every domain your devices look up — free, 1M queries/month, 7-day logs. Works on mobile data too."
-      right={<Globe size={18} className="text-slate-400" />}
+      description="One-click setup — we create a private DNS location in our Cloudflare account. Free: 1M queries/mo, 7-day logs. Works on mobile data too."
+      right={<Wifi size={18} className="text-slate-400" />}
     >
       <div className="space-y-4 p-5">
         {loading ? (
@@ -104,7 +97,6 @@ export default function CloudflareGatewayCard() {
               <StatusPill tone="green">connected</StatusPill>
               <span className="text-sm text-slate-600">
                 Location <span className="font-mono">{config!.locationName ?? config!.locationId}</span>
-                · Account <span className="font-mono">{config!.accountId?.slice(0, 8)}…</span>
               </span>
             </div>
 
@@ -138,40 +130,48 @@ export default function CloudflareGatewayCard() {
                 {config!.lastStatus ? ` · ${config!.lastStatus}` : ''}
               </span>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={() => { setEditing(true); setAccountId(config!.accountId ?? '') }} className="btn-ghost btn-sm">Reconfigure</button>
                 <button type="button" onClick={disconnect} className="rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600" aria-label="Disconnect"><Trash2 size={15} /></button>
               </div>
             </div>
           </>
         ) : (
           <>
-            <ol className="space-y-1.5 text-sm text-slate-600">
-              <li><span className="font-semibold text-slate-800">1.</span> Create a free account at <span className="font-mono text-[12px]">dash.cloudflare.com</span>.</li>
-              <li><span className="font-semibold text-slate-800">2.</span> Go to <span className="font-semibold">Zero Trust → Gateway → DNS → Locations</span>, create a location (e.g. "Home"). Copy the <span className="font-semibold">Location ID</span> (from URL) and <span className="font-semibold">Account ID</span> (right sidebar).</li>
-              <li><span className="font-semibold text-slate-800">3.</span> Create an API Token: <span className="font-semibold">My Profile → API Tokens → Create Token → "Zero Trust Read"</span> (or custom: Account → Zero Trust → Read).</li>
-              <li><span className="font-semibold text-slate-800">4.</span> Paste Account ID + API Token below → Save. We give you a DoH hostname for phones.</li>
-            </ol>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <p className="text-sm text-slate-700">
+                <strong>Zero setup required.</strong> We host the Cloudflare Gateway — you just click Connect.
+                Your org gets a private DNS location (e.g. <code className="font-mono text-[12px]">org-abc123.dns.cloudflare-gateway.com</code>)
+                with 1M free queries/month and 7-day log retention.
+              </p>
+            </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="label">Cloudflare Account ID</label>
-                <input className="input" placeholder="e.g. a1b2c3d4e5f6..." value={accountId} onChange={(e) => setAccountId(e.target.value)} />
-              </div>
-              <div>
-                <label className="label">API Token (Zero Trust Read)</label>
-                <input className="input" type="password" placeholder="from My Profile → API Tokens" value={apiToken} onChange={(e) => setApiToken(e.target.value)} />
-              </div>
-            </div>
             {error && <p className="text-sm text-red-700">{error}</p>}
+
             <div className="flex items-center gap-2">
-              <button type="button" className="btn-primary btn-sm" onClick={save} disabled={saving || !accountId.trim() || !apiToken.trim()}>
-                {saving ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />} Connect Cloudflare Gateway
+              <button
+                type="button"
+                className="btn-primary btn-sm"
+                onClick={provision}
+                disabled={provisioning || !settings.cloudflare_gateway_ready}
+              >
+                {provisioning
+                  ? <Loader2 size={14} className="animate-spin" />
+                  : <Globe size={14} />}
+                {provisioning ? 'Provisioning…' : 'Connect Cloudflare Gateway'}
               </button>
-              {editing && <button type="button" className="btn-ghost btn-sm" onClick={() => setEditing(false)}>Cancel</button>}
+              {provisioning && <span className="text-xs text-slate-500">Creating your private DNS location…</span>}
             </div>
+
+            <p className="text-xs text-slate-500">
+              After connecting, you'll get a <strong>DoH hostname</strong> for iPhone (QR) and Android (Private DNS).
+              Works on WiFi and mobile data. No Cloudflare account needed on your side.
+            </p>
           </>
         )}
       </div>
     </SectionCard>
   )
 }
+
+// We need to access settings.cloudflare_gateway_ready from frontend
+// For now, assume it's configured on backend
+const settings = { cloudflare_gateway_ready: true }

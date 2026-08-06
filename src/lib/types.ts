@@ -370,13 +370,13 @@ export interface CollectionStream {
 
 export interface CloudflareGatewayConfig {
   configured: boolean
-  accountId: string | null
   locationId: string | null
   locationName: string | null
   dohHostname: string | null
   enabled: boolean
   lastSyncedAt: string | null
   lastStatus: string | null
+  organizationId: string | null
 }
 
 export interface Feed {
