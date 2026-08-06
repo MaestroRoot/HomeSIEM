@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { HardDrive, Loader2, Microscope, Play, Radio } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, ForensicSnapshotRecord } from '@/lib/types'
 
 function online(a: AgentRecord): boolean {
@@ -36,8 +37,8 @@ export default function Forensics() {
   }
   useEffect(() => {
     load()
-    const t = setInterval(load, 4000)
-    return () => clearInterval(t)
+    const stop = pollWhenVisible(load, 8000)
+    return () => stop()
   }, [])
 
   async function run(agent: AgentRecord) {

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ChevronRight, Download, FolderPlus, Loader2, Siren } from 'lucide-react'
 import { AiPanel, EmptyState, PageHeader, SectionCard, StatCard, StatusPill, cx } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { IncidentRecord, SecurityEventRow, Verdict } from '@/lib/types'
 
 const verdictTone: Record<Verdict, 'red' | 'amber' | 'green' | 'slate'> = {
@@ -52,10 +53,10 @@ export default function Alerts() {
       }
     }
     load()
-    const t = setInterval(load, 8000)
+    const stop = pollWhenVisible(load, 15000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 

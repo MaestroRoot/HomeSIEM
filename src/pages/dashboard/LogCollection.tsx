@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ChevronDown, ChevronRight, Loader2, Play, Radio, Repeat, ScrollText, Square } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, CollectionStream, LogList } from '@/lib/types'
 
 const levelTone: Record<string, 'red' | 'amber' | 'slate' | 'green'> = {
@@ -52,8 +53,8 @@ export default function LogCollection() {
       }
     }
     load()
-    const t = setInterval(load, 5000)
-    return () => { active = false; clearInterval(t) }
+    const stop = pollWhenVisible(load, 12000)
+    return () => { active = false; stop() }
   }, [])
 
   const autoStream = (id: string) => streams.find((s) => s.agentId === id && s.kind === 'logs' && s.enabled)
@@ -96,10 +97,10 @@ export default function LogCollection() {
       }
     }
     load()
-    const t = setInterval(load, 6000)
+    const stop = pollWhenVisible(load, 12000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [source])
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Loader2, Play, Radio, Repeat, Square, Waves } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, CollectionStream, SecurityEventRow, Verdict } from '@/lib/types'
 
 const verdictTone: Record<Verdict, 'red' | 'amber' | 'green' | 'slate'> = {
@@ -56,10 +57,10 @@ export default function LiveCapture() {
       }
     }
     load()
-    const t = setInterval(load, 5000)
+    const stop = pollWhenVisible(load, 12000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 

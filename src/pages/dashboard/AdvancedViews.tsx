@@ -30,6 +30,7 @@ import {
   cx,
 } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type {
   DetectionRule,
   MonitoredDevice,
@@ -96,10 +97,10 @@ export function Compliance() {
       }
     }
     load()
-    const t = setInterval(load, 15000)
+    const stop = pollWhenVisible(load, 20000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 
@@ -269,8 +270,8 @@ export function NetworkGraph() {
       }
     }
     load()
-    const t = setInterval(load, 8000)
-    return () => { active = false; clearInterval(t) }
+    const stop = pollWhenVisible(load, 15000)
+    return () => { active = false; stop() }
   }, [])
 
   const graph = useMemo(() => {
@@ -612,8 +613,8 @@ export function DeviceDetail() {
       }
     }
     load()
-    const t = setInterval(load, 8000)
-    return () => { active = false; clearInterval(t) }
+    const stop = pollWhenVisible(load, 15000)
+    return () => { active = false; stop() }
   }, [id])
 
   // Weka thamani za fomu mara moja device inapopatikana (bila kufuta maandishi

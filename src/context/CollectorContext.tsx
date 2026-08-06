@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { SecurityEventRow } from '@/lib/types'
 
 interface CollectorState {
@@ -48,10 +49,10 @@ export function CollectorProvider({ children }: { children: ReactNode }) {
     }
 
     check()
-    const timer = setInterval(check, 15000)
+    const stop = pollWhenVisible(check, 20000)
     return () => {
       active = false
-      clearInterval(timer)
+      stop()
     }
   }, [])
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Loader2, Radar, Wrench } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { DetectionRule } from '@/lib/types'
 
 const sevTone: Record<string, 'red' | 'amber' | 'green' | 'slate'> = {
@@ -29,10 +30,10 @@ export default function ThreatDetection() {
       }
     }
     load()
-    const t = setInterval(load, 8000)
+    const stop = pollWhenVisible(load, 15000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 

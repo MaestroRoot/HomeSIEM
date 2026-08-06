@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Check, Copy, Cpu, KeyRound, Loader2, Radio, ShieldCheck, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentRecord, SensorTokenCreated } from '@/lib/types'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1') as string
@@ -52,8 +53,8 @@ export default function Agents() {
   }
   useEffect(() => {
     load()
-    const t = setInterval(load, 5000)
-    return () => clearInterval(t)
+    const stop = pollWhenVisible(load, 12000)
+    return () => stop()
   }, [])
 
   async function generate(e: React.FormEvent) {

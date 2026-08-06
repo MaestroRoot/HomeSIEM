@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Loader2, ShieldAlert } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { FeedsResponse, StatsOverview, Verdict } from '@/lib/types'
 
 const verdictTone: Record<Verdict, 'red' | 'amber' | 'green' | 'slate'> = {
@@ -34,10 +35,10 @@ export default function ThreatIntel() {
       }
     }
     load()
-    const t = setInterval(load, 12000)
+    const stop = pollWhenVisible(load, 20000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 

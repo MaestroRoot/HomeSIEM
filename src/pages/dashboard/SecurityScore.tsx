@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Gauge, Loader2 } from 'lucide-react'
 import { PageHeader, SectionCard, SeverityBadge } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { SecurityScore as Score, Severity } from '@/lib/types'
 
 function ring(score: number) {
@@ -29,10 +30,10 @@ export default function SecurityScore() {
       }
     }
     load()
-    const t = setInterval(load, 12000)
+    const stop = pollWhenVisible(load, 20000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 

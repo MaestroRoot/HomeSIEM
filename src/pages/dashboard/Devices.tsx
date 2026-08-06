@@ -18,6 +18,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { MonitoredDevice, SecurityEventRow, Verdict } from '@/lib/types'
 
 const verdictTone: Record<Verdict, 'red' | 'amber' | 'green' | 'slate'> = {
@@ -96,11 +97,11 @@ export default function Devices() {
     load()
   }, [])
 
-  // Feed ya live: inaonyesha events zinapoingia kutoka sensor. Poll kila 5s.
+  // Feed ya live: inaonyesha events zinapoingia kutoka sensor.
   useEffect(() => {
     loadEvents(onlyFlagged)
-    const t = setInterval(() => loadEvents(onlyFlagged), 5000)
-    return () => clearInterval(t)
+    const stop = pollWhenVisible(() => loadEvents(onlyFlagged), 15000)
+    return () => stop()
   }, [onlyFlagged])
 
   async function addDevice(e: React.FormEvent) {

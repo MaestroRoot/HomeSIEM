@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Loader2, Radio, ShieldCheck, Play } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, SeverityBadge, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, Severity, VulnRecord } from '@/lib/types'
 
 function online(a: AgentRecord): boolean {
@@ -35,8 +36,8 @@ export default function Vulnerabilities() {
   }
   useEffect(() => {
     load()
-    const t = setInterval(load, 4000)
-    return () => clearInterval(t)
+    const stop = pollWhenVisible(load, 8000)
+    return () => stop()
   }, [])
 
   async function scan(agent: AgentRecord) {

@@ -26,6 +26,46 @@ interface RequestOptions {
   signal?: AbortSignal
 }
 
+/* ---------- GET cache (stale-while-revalidate + ETag/304) ----------
+ * Kwenye mtandao wa polepole (latency kubwa), tunahifadhi jibu la mwisho la
+ * kila GET. Tunatuma `If-None-Match`; server ikirudisha 304 (data haijabadilika)
+ * tunatumia cache, hakuna JSON kubwa ya kuhamisha. `api.cached()` inaruhusu page
+ * ionyeshe data ya mwisho MARA MOJA kabla fetch mpya haijaisha. */
+interface CacheEntry {
+  etag: string
+  data: unknown
+}
+const memCache = new Map<string, CacheEntry>()
+const CACHE_PREFIX = 'hs:cache:'
+const MAX_CACHE_BYTES = 300_000
+
+function readCache(path: string): CacheEntry | undefined {
+  const hit = memCache.get(path)
+  if (hit) return hit
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + path)
+    if (raw) {
+      const parsed = JSON.parse(raw) as CacheEntry
+      memCache.set(path, parsed)
+      return parsed
+    }
+  } catch {
+    /* localStorage haipatikani / JSON mbaya */
+  }
+  return undefined
+}
+
+function writeCache(path: string, etag: string, data: unknown): void {
+  const entry: CacheEntry = { etag, data }
+  memCache.set(path, entry)
+  try {
+    const serialized = JSON.stringify(entry)
+    if (serialized.length <= MAX_CACHE_BYTES) localStorage.setItem(CACHE_PREFIX + path, serialized)
+  } catch {
+    /* quota exceeded — memory cache bado inatosha */
+  }
+}
+
 async function bearerToken(): Promise<string> {
   const current = auth.currentUser
   if (!current) throw new ApiError('You are not signed in.', 401, 'not_signed_in')
@@ -58,6 +98,9 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (needsAuth) headers.Authorization = `Bearer ${await bearerToken()}`
 
+  const cached = method === 'GET' ? readCache(path) : undefined
+  if (cached) headers['If-None-Match'] = cached.etag
+
   let response: Response
   try {
     response = await fetch(`${BASE_URL}${path}`, {
@@ -68,9 +111,13 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     })
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error
+    // Mtandao umeshindwa: rudisha cache kama tunayo (bora kuliko kukwama).
+    if (cached) return cached.data as T
     throw new ApiError('The server is not reachable. Check that the backend is running.', 0, 'network_error')
   }
 
+  // 304 Not Modified: data haijabadilika, tumia cache (hakuna body).
+  if (response.status === 304 && cached) return cached.data as T
   if (response.status === 204) return undefined as T
 
   const payload = await response.json().catch(() => null)
@@ -78,6 +125,11 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
   if (!response.ok) {
     const { detail, code } = readDetail(payload, `Request failed (${response.status}).`)
     throw new ApiError(detail, response.status, code)
+  }
+
+  if (method === 'GET') {
+    const etag = response.headers.get('ETag')
+    if (etag) writeCache(path, etag, payload)
   }
 
   return payload as T
@@ -128,4 +180,7 @@ export const api = {
   del: <T>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
     apiFetch<T>(path, { ...options, method: 'DELETE' }),
   upload: apiUpload,
+  /** Jibu la mwisho lililohifadhiwa la GET hii (au null). Kwa seed ya papo hapo:
+   *  `useState(() => api.cached<T>(path))` — page inaonyesha data kabla fetch. */
+  cached: <T>(path: string): T | null => (readCache(path)?.data as T | undefined) ?? null,
 }

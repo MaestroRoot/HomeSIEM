@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Clock, Download, Loader2 } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, StatusPill, cx } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { SecurityEventRow, Verdict } from '@/lib/types'
 
 function exportCsv(events: SecurityEventRow[]) {
@@ -59,10 +60,10 @@ export default function Timeline() {
       }
     }
     load()
-    const t = setInterval(load, 8000)
+    const stop = pollWhenVisible(load, 15000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [onlyFlagged])
 

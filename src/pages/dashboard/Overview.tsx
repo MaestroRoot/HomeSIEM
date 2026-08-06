@@ -15,6 +15,7 @@ import {
 } from 'recharts'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { SecurityEventRow, StatsOverview, Verdict } from '@/lib/types'
 
 const fmt = (n: number) => n.toLocaleString()
@@ -78,10 +79,10 @@ export default function Overview() {
       }
     }
     load()
-    const t = setInterval(load, 10000)
+    const stop = pollWhenVisible(load, 20000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 

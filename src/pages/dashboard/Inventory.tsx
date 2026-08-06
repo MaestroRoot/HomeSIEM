@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Calendar, Loader2, Network, Package, Play, ScanSearch, Search, Trash2 } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, DiscoverySchedule, MonitoredDevice, SoftwarePackage, StatsOverview } from '@/lib/types'
 
 function agentOnline(a: AgentRecord): boolean {
@@ -51,8 +52,8 @@ export default function Inventory() {
   }
   useEffect(() => {
     load()
-    const t = setInterval(load, 8000)
-    return () => clearInterval(t)
+    const stop = pollWhenVisible(load, 20000)
+    return () => stop()
   }, [])
 
   const discovering = jobs.some((j) => j.kind === 'discovery' && (j.status === 'pending' || j.status === 'running'))

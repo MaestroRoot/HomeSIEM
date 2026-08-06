@@ -16,6 +16,7 @@ import {
 } from 'recharts'
 import { EmptyState, PageHeader, SectionCard } from '@/components/ui'
 import { api } from '@/lib/api'
+import { pollWhenVisible } from '@/lib/usePolling'
 import type { StatsOverview } from '@/lib/types'
 
 const VERDICT_COLORS: Record<string, string> = {
@@ -42,10 +43,10 @@ export default function Visualization() {
       }
     }
     load()
-    const t = setInterval(load, 10000)
+    const stop = pollWhenVisible(load, 20000)
     return () => {
       active = false
-      clearInterval(t)
+      stop()
     }
   }, [])
 
