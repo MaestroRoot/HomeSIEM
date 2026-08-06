@@ -368,6 +368,16 @@ export interface CollectionStream {
   createdAt: string
 }
 
+export interface NextDnsConfig {
+  configured: boolean
+  profileId: string | null
+  apiKeyMasked: string | null
+  enabled: boolean
+  dnsHostname: string | null
+  lastSyncedAt: string | null
+  lastStatus: string | null
+}
+
 export interface Feed {
   name: string
   type: string

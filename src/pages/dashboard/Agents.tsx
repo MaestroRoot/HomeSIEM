@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, Copy, Cpu, KeyRound, Loader2, Radio, ShieldCheck, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import NextDnsCard from '@/components/dashboard/NextDnsCard'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentRecord, SensorTokenCreated } from '@/lib/types'
@@ -9,9 +10,6 @@ const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/ap
 //: Script za sensor zinahudumiwa kutoka origin ile ile ya app (folda ya
 //: `public/`), mfano https://home-siem.vercel.app/agent.py
 const DOWNLOAD_BASE = typeof window !== 'undefined' ? window.location.origin : ''
-//: Profile ID ya NextDNS (kwa maelekezo ya Private DNS kwenye simu). Overridable
-//: kwa VITE_NEXTDNS_ID — haiwekwi hardcoded ili kila deployment iwe na yake.
-const NEXTDNS_ID = (import.meta.env.VITE_NEXTDNS_ID ?? '') as string
 //: Agent ni program ya nje (si browser), kwa hiyo HOMESIEM_URL LAZIMA iwe
 //: kamili. VITE_API_BASE_URL ikiwa relative (mfano /api/v1), iunganishe na origin.
 const API_ABS = API_BASE.startsWith('http') ? API_BASE : `${DOWNLOAD_BASE}${API_BASE}`
@@ -129,22 +127,8 @@ export default function Agents() {
         </div>
       </SectionCard>
 
-      {/* Step 3: NextDNS (recommended for phones / whole-home DNS) */}
-      <SectionCard title="3. Monitor a phone / whole home (NextDNS)" description="See every domain your devices look up — no app to install on the phone, works even on mobile data.">
-        <div className="space-y-3 p-5">
-          {NEXTDNS_ID ? (
-            <>
-              <p className="text-sm text-slate-600"><span className="font-semibold">On Android</span> (Settings → Network → <span className="font-semibold">Private DNS</span> → “Private DNS provider hostname”), enter:</p>
-              <CopyBlock text={`${NEXTDNS_ID}.dns.nextdns.io`} />
-              <p className="text-sm text-slate-600"><span className="font-semibold">On iPhone / Mac:</span> install the NextDNS configuration profile from <span className="font-mono text-[12px]">my.nextdns.io</span> → Setup → Apple.</p>
-              <p className="text-sm text-slate-600"><span className="font-semibold">Whole home (if your router allows):</span> set the router DNS servers to <span className="font-mono text-[12px]">45.90.28.56</span> and <span className="font-mono text-[12px]">45.90.30.56</span>, then “Link IP” in NextDNS.</p>
-              <p className="text-xs text-slate-500">Use the <span className="font-semibold">hostname</span> above on phones — not an IP. Every domain the device looks up then flows into HomeSIEM automatically.</p>
-            </>
-          ) : (
-            <p className="text-sm text-slate-600">NextDNS is not configured for this workspace yet. Once set up, this section shows the exact Private DNS hostname to enter on each phone.</p>
-          )}
-        </div>
-      </SectionCard>
+      {/* Step 3: NextDNS integration (per-org, set up in the app) */}
+      <NextDnsCard />
 
       {/* Step 4: DNS resolver (advanced / self-hosted) */}
       <SectionCard title="4. Self-hosted DNS resolver (advanced, optional)" description="Alternative to NextDNS: run your own resolver on a host and point devices' DNS at it.">
