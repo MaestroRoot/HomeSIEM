@@ -26,16 +26,6 @@ interface UebaOverview {
   baselinesPending: number
 }
 
-interface UserRisk {
-  ownerName: string
-  currentScore: number
-  previousScore: number
-  trend: 'up' | 'down' | 'stable'
-  openAnomalies: number
-  totalAnomalies: number
-  lastUpdatedAt: string | null
-}
-
 interface DeviceUser {
   ownerName: string
   deviceCount: number
@@ -105,7 +95,6 @@ export default function Ueba() {
   const [tab, setTab] = useState<Tab>('overview')
   const [overview, setOverview] = useState<UebaOverview | null>(null)
   const [allUsers, setAllUsers] = useState<DeviceUser[]>([])
-  const [users, setUsers] = useState<UserRisk[]>([])
   const [anomalies, setAnomalies] = useState<Anomaly[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -130,13 +119,6 @@ export default function Ueba() {
     } catch { /* keep */ }
   }
 
-  async function loadUsers() {
-    try {
-      const res = await api.get<{ items: UserRisk[] }>('/ueba/users')
-      setUsers(res.items)
-    } catch { /* keep */ }
-  }
-
   async function loadAnomalies() {
     try {
       const res = await api.get<{ items: Anomaly[] }>('/ueba/anomalies?limit=200')
@@ -147,14 +129,13 @@ export default function Ueba() {
   useEffect(() => {
     loadOverview()
     loadAllUsers()
-    loadUsers()
     loadAnomalies()
   }, [])
 
   useEffect(() => {
     const stop = pollWhenVisible(() => {
       if (tab === 'overview') { loadOverview(); loadAllUsers(); }
-      if (tab === 'users') { loadAllUsers(); loadUsers(); }
+      if (tab === 'users') loadAllUsers()
       if (tab === 'anomalies') loadAnomalies()
     }, 30000)
     return () => stop()
@@ -165,7 +146,6 @@ export default function Ueba() {
     try {
       await api.post(`/ueba/analyze/${encodeURIComponent(ownerName)}`)
       await loadAllUsers()
-      await loadUsers()
       await loadAnomalies()
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Analysis failed.')
