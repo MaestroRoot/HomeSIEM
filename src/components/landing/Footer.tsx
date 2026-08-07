@@ -61,16 +61,16 @@ export default function Footer() {
             <h3 className="text-sm font-bold text-slate-900">Navigate</h3>
             <ul className="mt-4 space-y-2.5 text-sm text-slate-600">
               {[
-                { l: 'Home', h: '#home' },
-                { l: 'About', h: '#about' },
-                { l: 'Services', h: '#services' },
-                { l: 'How it works', h: '#how' },
-                { l: 'Who it is for', h: '#audience' },
+                { l: 'Home', h: '/' },
+                { l: 'About', h: '/about' },
+                { l: 'Services', h: '/services' },
+                { l: 'How it works', h: '/how-it-works' },
+                { l: 'Who it is for', h: '/who-it-is-for' },
               ].map((i) => (
                 <li key={i.h}>
-                  <a href={i.h} className="hover:text-brand-600">
+                  <Link to={i.h} className="hover:text-brand-600">
                     {i.l}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -100,8 +100,8 @@ export default function Footer() {
 
         <div className="border-t border-slate-100">
           <div className="container-x flex flex-col items-center justify-between gap-3 py-5 text-xs text-slate-500 sm:flex-row">
-            <p>© {year} HomeSIEM. Monitor only networks and systems you are authorised to test.</p>
-            <p className="font-mono">v1.0.0 · Personal SIEM &amp; Home SOC</p>
+            <p>&copy; {year} HomeSIEM. Monitor only networks and systems you are authorised to test.</p>
+            <p className="font-mono">v1.0.0 &middot; Personal SIEM &amp; Home SOC</p>
           </div>
         </div>
       </footer>

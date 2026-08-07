@@ -2,6 +2,10 @@ import { useEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 
 import Landing from './pages/Landing'
+import AboutPage from './pages/About'
+import ServicesPage from './pages/Services'
+import HowItWorksPage from './pages/HowItWorks'
+import AudiencePage from './pages/Audience'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import ForgotPassword from './pages/ForgotPassword'
@@ -63,6 +67,10 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/services" element={<ServicesPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/who-it-is-for" element={<AudiencePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

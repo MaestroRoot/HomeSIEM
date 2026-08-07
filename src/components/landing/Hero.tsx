@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react'
 
 export default function Hero() {
   return (
-    <section id="home" className="relative isolate overflow-hidden pt-[72px] bg-slate-900">
+    <section id="home" className="relative isolate overflow-hidden min-h-screen pt-[72px] bg-slate-900 flex flex-col justify-center">
       {/* video + overlay background */}
       <div className="absolute inset-0">
         <video
@@ -20,14 +20,14 @@ export default function Hero() {
         <div className="absolute inset-0 bg-black/30" />
       </div>
 
-      <div className="container-x relative z-10 mx-auto pb-24 pt-10 lg:pb-32 lg:pt-14">
-        <div className="animate-fade-up max-w-2xl">
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
+      <div className="container-x relative z-10 mx-auto w-full pb-16 pt-10 sm:pb-20 lg:pb-32 lg:pt-14">
+        <div className="animate-fade-up max-w-2xl px-4 sm:px-6">
+          <h1 className="mt-5 text-3xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
             Your own <span className="text-brand-300">Security Operations Center</span>
             <span className="block">running at home.</span>
           </h1>
 
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-100/90">
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-100/90 sm:text-lg">
             HomeSIEM collects logs and live packets from every device you own, runs them through an AI
             threat engine, and explains what is happening in plain language, not just another wall of alerts.
           </p>
