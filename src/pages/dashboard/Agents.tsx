@@ -6,7 +6,7 @@ import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentRecord, SensorTokenCreated } from '@/lib/types'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1') as string
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1') as string
 //: Script za sensor zinahudumiwa kutoka origin ile ile ya app (folda ya
 //: `public/`), mfano https://home-siem.vercel.app/agent.py
 const DOWNLOAD_BASE = typeof window !== 'undefined' ? window.location.origin : ''

@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle, Loader2, Mail, MessageSquare, Phone, Send, Us
 import Navbar from '@/components/landing/Navbar'
 import Footer from '@/components/landing/Footer'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '')
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1').replace(/\/$/, '')
 
 const topics = [
   'General inquiry',
