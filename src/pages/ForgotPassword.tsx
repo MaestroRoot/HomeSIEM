@@ -139,12 +139,6 @@ export default function ForgotPassword() {
     <AuthLayout
       title={STEP_LABEL[step]}
       subtitle={STEP_SUB[step]}
-      highlights={[
-        'The code expires in ten minutes',
-        'It can only be used once',
-        'Changing your password signs out every other device',
-        'Nobody from HomeSIEM will ever ask you for the code',
-      ]}
       footer={
         <>
           Remembered it?{' '}

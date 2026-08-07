@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { LayoutDashboard, Menu, X } from 'lucide-react'
 import Logo from '../Logo'
@@ -23,6 +23,12 @@ export default function Navbar() {
 
   const transparentPages = ['/', '/pricing']
   const isTransparent = !scrolled && transparentPages.includes(pathname)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <header
