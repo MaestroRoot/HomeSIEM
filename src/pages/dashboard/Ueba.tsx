@@ -36,6 +36,18 @@ interface UserRisk {
   lastUpdatedAt: string | null
 }
 
+interface DeviceUser {
+  ownerName: string
+  deviceCount: number
+  hasBaseline: boolean
+  currentScore: number
+  previousScore: number
+  trend: 'up' | 'down' | 'stable'
+  openAnomalies: number
+  totalAnomalies: number
+  lastUpdatedAt: string | null
+}
+
 interface Anomaly {
   id: string
   ownerName: string
@@ -92,6 +104,7 @@ const anomalyLabels: Record<string, string> = {
 export default function Ueba() {
   const [tab, setTab] = useState<Tab>('overview')
   const [overview, setOverview] = useState<UebaOverview | null>(null)
+  const [allUsers, setAllUsers] = useState<DeviceUser[]>([])
   const [users, setUsers] = useState<UserRisk[]>([])
   const [anomalies, setAnomalies] = useState<Anomaly[]>([])
   const [loading, setLoading] = useState(true)
@@ -110,6 +123,13 @@ export default function Ueba() {
     }
   }
 
+  async function loadAllUsers() {
+    try {
+      const res = await api.get<{ items: DeviceUser[] }>('/ueba/all-users')
+      setAllUsers(res.items)
+    } catch { /* keep */ }
+  }
+
   async function loadUsers() {
     try {
       const res = await api.get<{ items: UserRisk[] }>('/ueba/users')
@@ -126,14 +146,15 @@ export default function Ueba() {
 
   useEffect(() => {
     loadOverview()
+    loadAllUsers()
     loadUsers()
     loadAnomalies()
   }, [])
 
   useEffect(() => {
     const stop = pollWhenVisible(() => {
-      if (tab === 'overview') loadOverview()
-      if (tab === 'users') loadUsers()
+      if (tab === 'overview') { loadOverview(); loadAllUsers(); }
+      if (tab === 'users') { loadAllUsers(); loadUsers(); }
       if (tab === 'anomalies') loadAnomalies()
     }, 30000)
     return () => stop()
@@ -143,6 +164,7 @@ export default function Ueba() {
     setAnalyzing(ownerName)
     try {
       await api.post(`/ueba/analyze/${encodeURIComponent(ownerName)}`)
+      await loadAllUsers()
       await loadUsers()
       await loadAnomalies()
     } catch (err) {
@@ -152,8 +174,8 @@ export default function Ueba() {
     }
   }
 
-  const criticalUsers = useMemo(() => users.filter((u) => u.currentScore >= 70), [users])
-  const highUsers = useMemo(() => users.filter((u) => u.currentScore >= 40 && u.currentScore < 70), [users])
+  const criticalUsers = useMemo(() => allUsers.filter((u) => u.hasBaseline && u.currentScore >= 70), [allUsers])
+  const highUsers = useMemo(() => allUsers.filter((u) => u.hasBaseline && u.currentScore >= 40 && u.currentScore < 70), [allUsers])
 
   return (
     <div className="space-y-6">
@@ -303,7 +325,7 @@ export default function Ueba() {
             </SectionCard>
           )}
 
-          {users.length === 0 && !loading && (
+          {allUsers.length === 0 && !loading && (
             <SectionCard title="No users yet">
               <div className="px-5 py-10 text-center text-sm text-slate-400">
                 <UserCheck size={32} className="mx-auto mb-3 text-slate-300" />
@@ -318,14 +340,15 @@ export default function Ueba() {
       {/* Users Tab */}
       {tab === 'users' && (
         <SectionCard
-          title="User Risk Scores"
-          description={loading ? 'Loading...' : `${users.length} users tracked`}
+          title="Device Users"
+          description={loading ? 'Loading...' : `${allUsers.length} users tracked`}
         >
           <TableWrap>
             <table className="table-base">
               <thead>
                 <tr>
                   <th>User</th>
+                  <th>Devices</th>
                   <th>Risk Score</th>
                   <th>Trend</th>
                   <th>Open Anomalies</th>
@@ -337,23 +360,24 @@ export default function Ueba() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-slate-400">
+                    <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
                       <Loader2 size={18} className="mx-auto animate-spin" />
                     </td>
                   </tr>
-                ) : users.length === 0 ? (
+                ) : allUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-slate-400">
-                      No users with risk scores yet. Assign owners to devices in Device Management.
+                    <td colSpan={8} className="px-5 py-10 text-center text-sm text-slate-400">
+                      No users with assigned devices yet. Go to Device Management and assign an owner to a device.
                     </td>
                   </tr>
                 ) : (
-                  users.map((u) => (
+                  allUsers.map((u) => (
                     <tr key={u.ownerName}>
                       <td>
                         <div className="flex items-center gap-2.5">
                           <div className={cx(
                             'grid h-8 w-8 shrink-0 place-items-center rounded-lg',
+                            !u.hasBaseline ? 'bg-slate-100 text-slate-400' :
                             riskTone(u.currentScore) === 'red' ? 'bg-red-50 text-red-600' :
                             riskTone(u.currentScore) === 'amber' ? 'bg-amber-50 text-amber-600' :
                             'bg-emerald-50 text-emerald-600',
@@ -362,21 +386,27 @@ export default function Ueba() {
                           </div>
                           <div>
                             <p className="font-semibold text-slate-900">{u.ownerName}</p>
+                            {!u.hasBaseline && <p className="text-xs text-slate-400">Not analyzed yet</p>}
                           </div>
                         </div>
                       </td>
+                      <td className="tabular-nums">{u.deviceCount}</td>
                       <td>
-                        <StatusPill tone={riskTone(u.currentScore)}>{u.currentScore}</StatusPill>
+                        <StatusPill tone={!u.hasBaseline ? 'slate' : riskTone(u.currentScore)}>
+                          {u.hasBaseline ? u.currentScore : '—'}
+                        </StatusPill>
                       </td>
                       <td>
-                        <div className="flex items-center gap-1">
-                          <TrendIcon trend={u.trend} />
-                          <span className="text-xs text-slate-500">{u.trend}</span>
-                        </div>
+                        {u.hasBaseline && (
+                          <div className="flex items-center gap-1">
+                            <TrendIcon trend={u.trend} />
+                            <span className="text-xs text-slate-500">{u.trend}</span>
+                          </div>
+                        )}
                       </td>
-                      <td className="tabular-nums">{u.openAnomalies}</td>
-                      <td className="tabular-nums">{u.totalAnomalies}</td>
-                      <td className="whitespace-nowrap text-slate-500">{timeAgo(u.lastUpdatedAt)}</td>
+                      <td className="tabular-nums">{u.hasBaseline ? u.openAnomalies : '—'}</td>
+                      <td className="tabular-nums">{u.hasBaseline ? u.totalAnomalies : '—'}</td>
+                      <td className="whitespace-nowrap text-slate-500">{u.hasBaseline ? timeAgo(u.lastUpdatedAt) : '—'}</td>
                       <td>
                         <button
                           type="button"
