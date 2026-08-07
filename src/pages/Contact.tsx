@@ -3,6 +3,8 @@ import { AlertCircle, CheckCircle, Loader2, Mail, MessageSquare, Phone, Send, Us
 import Navbar from '@/components/landing/Navbar'
 import Footer from '@/components/landing/Footer'
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '')
+
 const topics = [
   'General inquiry',
   'Security consultation',
@@ -36,7 +38,7 @@ export default function ContactPage() {
 
     setSending(true)
     try {
-      const res = await fetch('/api/v1/contact', {
+      const res = await fetch(`${API_BASE}/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), email: email.trim(), phone: phone.trim() || undefined, topic, message: message.trim() }),

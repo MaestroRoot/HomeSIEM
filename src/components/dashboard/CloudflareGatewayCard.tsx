@@ -5,7 +5,7 @@ import { SectionCard, StatusPill } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
 import type { CloudflareGatewayConfig } from '@/lib/types'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1') as string
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '')
 
 function appleProfileUrl(orgId: string): string {
   const base = API_BASE.startsWith('http') ? API_BASE : `${window.location.origin}${API_BASE}`
