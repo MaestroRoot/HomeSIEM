@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import Logo from '@/components/Logo'
 
@@ -58,7 +58,7 @@ export function Terms() {
       title="Terms of Service"
       sections={[
         { heading: '1. Acceptance of these terms', body: ['By creating an account or using HomeSIEM ("the Service"), you agree to these Terms of Service. If you do not agree, do not use the Service.'] },
-        { heading: '2. What the Service is', body: ['HomeSIEM is a personal security monitoring platform (a home SIEM/SOC). It collects security telemetry from devices and sensors you set up — such as DNS lookups, network flows, logs and scan results — enriches it with geolocation and threat intelligence, and presents alerts and reports.'] },
+        { heading: '2. What the Service is', body: ['HomeSIEM is a personal security monitoring platform (a home SIEM/SOC). It collects security telemetry from devices and sensors you set up, such as DNS lookups, network flows, logs and scan results, enriches it with geolocation and threat intelligence, and presents alerts and reports.'] },
         { heading: '3. Authorised use only', body: ['You may only monitor, capture traffic from, scan or collect data from networks, devices and systems that you own or are explicitly authorised to test. You are solely responsible for ensuring you have the legal right to monitor any device or network you connect to HomeSIEM. Using the Service to monitor or attack systems without authorisation is strictly prohibited and may be illegal.'] },
         { heading: '4. Your account', body: ['You are responsible for keeping your credentials and sensor tokens secure and for all activity under your account. Notify us immediately of any unauthorised use. Authentication is handled by Firebase Authentication.'] },
         { heading: '5. Acceptable use', body: ['You agree not to: use the Service to break into, disrupt or scan systems you do not control; interfere with the Service or its infrastructure; resell or misrepresent the Service; or use it to violate any applicable law.'] },

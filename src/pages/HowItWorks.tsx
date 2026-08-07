@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ChevronDown, Cpu, Database, LayoutDashboard, Radar, Router, Waves } from 'lucide-react'
+import { ChevronDown, Cpu, Database, Globe, HardDrive, LayoutDashboard, Radar, Router, Shield, Waves, Zap } from 'lucide-react'
 import Navbar from '@/components/landing/Navbar'
 import Footer from '@/components/landing/Footer'
 
@@ -36,12 +36,27 @@ const pipeline = [
   },
 ]
 
-const stack = [
-  { group: 'Frontend', items: ['React', 'TypeScript', 'Tailwind CSS', 'Recharts / ECharts'] },
-  { group: 'Backend', items: ['FastAPI or NestJS', 'REST + WebSockets', 'Celery workers'] },
-  { group: 'Storage', items: ['PostgreSQL', 'ClickHouse / OpenSearch', 'Redis'] },
-  { group: 'Capture', items: ['Npcap · WinPcap', 'libpcap', 'Scapy · PyShark'] },
-  { group: 'AI', items: ['Local or cloud LLM', 'Vector DB retrieval', 'Flow anomaly models'] },
+const systemHighlights = [
+  {
+    icon: Zap,
+    title: 'Real-time analysis',
+    body: 'Packets and logs are processed as they arrive. Alerts surface within seconds, not minutes.',
+  },
+  {
+    icon: Shield,
+    title: 'Local-first by default',
+    body: 'All analysis runs on your own hardware. Cloud AI is an option, never a requirement.',
+  },
+  {
+    icon: Globe,
+    title: 'Multi-device coverage',
+    body: 'Windows, Linux, macOS, Android, iOS and routers, one dashboard watches them all.',
+  },
+  {
+    icon: HardDrive,
+    title: 'Lightweight footprint',
+    body: 'Runs on a Raspberry Pi or any 512 MB VPS. No Kubernetes, no Docker swarm, no database cluster.',
+  },
 ]
 
 export default function HowItWorksPage() {
@@ -94,22 +109,28 @@ export default function HowItWorksPage() {
           </div>
         </section>
 
-        {/* Tech stack */}
+        {/* System highlights */}
         <section className="border-t border-slate-100 bg-slate-50/60 py-20 lg:py-28">
           <div className="container-x">
-            <h3 className="text-center text-sm font-bold uppercase tracking-widest text-slate-500">
-              Technology stack
-            </h3>
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {stack.map((s) => (
-                <div key={s.group} className="card p-5">
-                  <p className="text-xs font-bold uppercase tracking-wider text-brand-600">{s.group}</p>
-                  <ul className="mt-3 space-y-1.5">
-                    {s.items.map((i) => (
-                      <li key={i} className="text-sm text-slate-600">{i}</li>
-                    ))}
-                  </ul>
-                </div>
+            <div className="mx-auto max-w-3xl text-center">
+              <span className="eyebrow">Why it matters</span>
+              <h2 className="section-title mt-4">Built for how people actually use it</h2>
+              <p className="mt-4 text-base leading-relaxed text-slate-600">
+                Every design choice serves one goal: security you can run yourself, without a team or a budget.
+              </p>
+            </div>
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {systemHighlights.map((h) => (
+                <article
+                  key={h.title}
+                  className="card group p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lift"
+                >
+                  <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+                    <h.icon size={21} />
+                  </span>
+                  <h3 className="mt-4 text-base font-bold text-slate-900">{h.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{h.body}</p>
+                </article>
               ))}
             </div>
           </div>

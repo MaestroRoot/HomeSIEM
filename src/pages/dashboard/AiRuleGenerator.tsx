@@ -212,7 +212,7 @@ export default function AiRuleGenerator() {
         {tips.length === 0 ? (
           <div className="flex items-center gap-2 px-5 py-8 text-sm text-slate-500">
             <CheckCircle2 size={16} className="text-emerald-600" />
-            Your rules look well tuned — no noisy, dormant, or over-broad detectors right now.
+            Your rules look well tuned, no noisy, dormant, or over-broad detectors right now.
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">

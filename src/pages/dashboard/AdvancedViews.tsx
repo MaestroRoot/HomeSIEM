@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+﻿import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   Activity,
@@ -618,7 +618,7 @@ export function DeviceDetail() {
   }, [id])
 
   // Weka thamani za fomu mara moja device inapopatikana (bila kufuta maandishi
-  // ya mtumiaji kwenye poll zinazofuata — id haibadiliki).
+  // ya mtumiaji kwenye poll zinazofuata, id haibadiliki).
   useEffect(() => {
     if (device) {
       setNameInput(device.name)

@@ -1,41 +1,67 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Github, Globe, Mail } from 'lucide-react'
+import { ArrowRight, Brain, Eye, Globe, Mail, MessageCircle, Shield, Zap } from 'lucide-react'
 import Logo from '../Logo'
 
-export default function Footer() {
+const features = [
+  { icon: Shield, title: 'Protect every device', desc: 'Windows, Linux, macOS, Android, iOS and routers, one dashboard watches them all.' },
+  { icon: Eye, title: 'See what others miss', desc: 'Live packet capture, DNS monitoring and log analysis running 24/7 on your network.' },
+  { icon: Brain, title: 'AI that explains, not just alerts', desc: 'Plain-English investigations telling you what happened, why it matters, and what to do next.' },
+  { icon: Zap, title: 'Up and running in minutes', desc: 'No enterprise hardware, no consultants. Install on a spare laptop or a Raspberry Pi.' },
+]
+
+export default function Footer({ showCta = true }: { showCta?: boolean }) {
   const year = new Date().getFullYear()
 
   return (
     <>
-      {/* CTA */}
-      <section className="relative overflow-hidden bg-brand-700 py-16 lg:py-20">
-        <div className="absolute inset-0 grid-bg opacity-30" />
-        <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-brand-500/40 blur-3xl" />
-        <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-brand-400/30 blur-3xl" />
-        <div className="container-x relative text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Start watching your own network tonight
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-brand-100">
-            Create an account, add your first device, and have live packet capture with AI analysis running in
-            under ten minutes.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
+      {/* CTA with video */}
+      {showCta && (
+      <section className="relative overflow-hidden py-20 lg:py-28">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="none"
+          className="absolute inset-0 h-full w-full object-cover"
+        >
+          <source src="/home-features.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-slate-900/50" />
+
+        <div className="container-x relative z-10">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/15"
+              >
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-500 text-white">
+                  <f.icon size={20} />
+                </span>
+                <h3 className="mt-3 text-sm font-bold text-white">{f.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-300">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-3">
             <Link
               to="/signup"
-              className="btn bg-white px-6 py-3 text-base text-brand-700 shadow-lg hover:bg-brand-50"
+              className="btn bg-white px-6 py-3 text-base font-semibold text-slate-900 shadow-lg hover:bg-slate-100"
             >
               Create free account <ArrowRight size={18} />
             </Link>
             <Link
               to="/login"
-              className="btn border border-white/40 px-6 py-3 text-base text-white hover:bg-white/10"
+              className="btn border border-white/30 px-6 py-3 text-base font-semibold text-white hover:bg-white/10"
             >
               I already have an account
             </Link>
           </div>
         </div>
       </section>
+      )}
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="container-x grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr]">
@@ -46,13 +72,20 @@ export default function Footer() {
               investigation in one place.
             </p>
             <div className="mt-5 flex gap-2">
-              {[Github, Globe, Mail].map((Icon, i) => (
-                <span
-                  key={i}
-                  className="grid h-9 w-9 cursor-pointer place-items-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600"
+              {[
+                { Icon: MessageCircle, href: 'https://wa.me/255757502743', label: 'WhatsApp' },
+                { Icon: Globe, href: 'https://maestrotechnologies.com', label: 'Website' },
+                { Icon: Mail, href: 'mailto:samsonbudigila6@gmail.com', label: 'Email' },
+              ].map(({ Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-600"
                 >
                   <Icon size={16} />
-                </span>
+                </a>
               ))}
             </div>
           </div>
@@ -66,6 +99,7 @@ export default function Footer() {
                 { l: 'Services', h: '/services' },
                 { l: 'How it works', h: '/how-it-works' },
                 { l: 'Who it is for', h: '/who-it-is-for' },
+                { l: 'Contact', h: '/contact' },
               ].map((i) => (
                 <li key={i.h}>
                   <Link to={i.h} className="hover:text-brand-600">

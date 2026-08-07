@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+﻿import { Fragment, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDown, ChevronRight, Loader2, Play, Radio, Repeat, ScrollText, Square } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
@@ -115,7 +115,7 @@ export default function LogCollection() {
       </div>
 
       {agents.length > 0 && (
-        <SectionCard title="Collect logs from a host" description="Collect once, or turn on Auto to keep pulling recent logs continuously — it runs on the server and keeps going even if you close this page, until you press Stop.">
+        <SectionCard title="Collect logs from a host" description="Collect once, or turn on Auto to keep pulling recent logs continuously, it runs on the server and keeps going even if you close this page, until you press Stop.">
           <ul className="divide-y divide-slate-100">
             {agents.map((a) => {
               const isAuto = Boolean(autoStream(a.id))

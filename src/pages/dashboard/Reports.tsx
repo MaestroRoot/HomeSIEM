@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { AlertCircle, CalendarClock, CheckCircle2, Download, FileText, Loader2, Send, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, cx } from '@/components/ui'
 import { api } from '@/lib/api'
@@ -44,28 +44,28 @@ function buildSections(
   sections.push({
     heading: 'Flagged indicators',
     body: stats.suspicious.length
-      ? stats.suspicious.map((s) => `• ${s.indicator} [${s.verdict}] ${s.country ?? ''} — ${s.pulseCount} reports, seen ${s.count}×`).join('\n')
+      ? stats.suspicious.map((s) => `• ${s.indicator} [${s.verdict}] ${s.country ?? ''}, ${s.pulseCount} reports, seen ${s.count}×`).join('\n')
       : 'No indicators were flagged in this period.',
   })
 
   if (events.length) {
     sections.push({
       heading: 'Recent flagged events',
-      body: events.slice(0, 15).map((e) => `• ${new Date(e.createdAt).toLocaleString()} — ${e.deviceName ?? e.srcIp} → ${e.domain ?? e.dstIp} [${e.verdict}]`).join('\n'),
+      body: events.slice(0, 15).map((e) => `• ${new Date(e.createdAt).toLocaleString()}, ${e.deviceName ?? e.srcIp} → ${e.domain ?? e.dstIp} [${e.verdict}]`).join('\n'),
     })
   }
 
   sections.push({
     heading: 'Devices',
     body: devices.length
-      ? devices.map((d) => `• ${d.name} (${d.mac ?? d.lastIp ?? '—'}) — risk ${d.riskScore}, ${d.eventsCount} events`).join('\n')
+      ? devices.map((d) => `• ${d.name} (${d.mac ?? d.lastIp ?? '—'}), risk ${d.riskScore}, ${d.eventsCount} events`).join('\n')
       : 'No devices are being monitored yet.',
   })
 
   if (vulns.length) {
     sections.push({
       heading: 'Vulnerabilities',
-      body: vulns.slice(0, 30).map((v) => `• [${v.severity}] ${v.target}:${v.port ?? ''} ${v.service ?? ''} — ${v.title}`).join('\n'),
+      body: vulns.slice(0, 30).map((v) => `• [${v.severity}] ${v.target}:${v.port ?? ''} ${v.service ?? ''}, ${v.title}`).join('\n'),
     })
   }
 
@@ -230,7 +230,7 @@ export default function Reports() {
         </SectionCard>
 
         <SectionCard
-          title={`${chosen.name} — preview`}
+          title={`${chosen.name}, preview`}
           description={period}
           right={sections && (
             <div className="flex flex-wrap gap-2">

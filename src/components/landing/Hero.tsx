@@ -11,13 +11,13 @@ export default function Hero() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="metadata"
           poster="/hero-poster.svg"
-          className="absolute inset-0 h-full w-full object-cover opacity-60"
+          className="absolute inset-0 h-full w-full object-cover"
         >
           <source src="/hero-bg.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
       <div className="container-x relative z-10 mx-auto w-full pb-16 pt-10 sm:pb-20 lg:pb-32 lg:pt-14">

@@ -109,7 +109,7 @@ export default function Agents() {
         {error && <div className="px-5 pb-4 text-sm text-red-700">{error}</div>}
         {token && (
           <div className="mx-5 mb-5 rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
-            <p className="text-sm font-semibold text-emerald-800">✓ Token for “{token.label}” created — it is already filled into the command below. Just copy and run it on the host:</p>
+            <p className="text-sm font-semibold text-emerald-800">✓ Token for “{token.label}” created, it is already filled into the command below. Just copy and run it on the host:</p>
             <div className="mt-3"><CopyBlock text={agentCmd} /></div>
             <p className="mt-2 text-xs text-emerald-700">The token is shown only once. It is also filled into the commands in steps 2 and 3 below.</p>
           </div>
@@ -121,7 +121,7 @@ export default function Agents() {
         <div className="space-y-3 p-5">
           <p className="text-sm text-slate-600">You need <span className="font-semibold">Python 3</span> installed (python.org → “Add to PATH”). Then, for forensics, one dependency:</p>
           <CopyBlock text={`python -m pip install psutil`} />
-          <p className="text-sm text-slate-600">Now open <span className="font-semibold">PowerShell</span> (as administrator for full access) and paste this — it downloads the agent and runs it:</p>
+          <p className="text-sm text-slate-600">Now open <span className="font-semibold">PowerShell</span> (as administrator for full access) and paste this, it downloads the agent and runs it:</p>
           <CopyBlock text={agentCmd} />
           <p className="text-xs text-slate-500">It enrolls once and keeps running. After this, use the Vulnerability Scanner, Forensics, Live Capture and Log Collection pages to trigger work on this host by clicking, no more commands.</p>
         </div>

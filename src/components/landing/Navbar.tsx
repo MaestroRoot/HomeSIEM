@@ -11,6 +11,7 @@ const links = [
   { label: 'Services', path: '/services' },
   { label: 'How it works', path: '/how-it-works' },
   { label: 'Who it is for', path: '/who-it-is-for' },
+  { label: 'Contact', path: '/contact' },
 ]
 
 export default function Navbar() {

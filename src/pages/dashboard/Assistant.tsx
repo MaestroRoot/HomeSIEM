@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bot, Loader2, Mic, Send, Sparkles, User, Volume2, VolumeX } from 'lucide-react'
 import { PageHeader, SectionCard, cx } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
@@ -26,7 +26,7 @@ function buildProactive(stats: StatsOverview | null): { insight: string | null; 
   const suggestions: string[] = []
   const worst = stats.suspicious[0]
   if (stats.byVerdict.malicious > 0) {
-    suggestions.push(`I have ${stats.byVerdict.malicious} malicious event(s) — what should I do first?`)
+    suggestions.push(`I have ${stats.byVerdict.malicious} malicious event(s), what should I do first?`)
   }
   if (stats.flagged > 0) {
     suggestions.push(`Summarise my ${stats.flagged} flagged event(s) and group them by device.`)
@@ -48,7 +48,7 @@ function buildProactive(stats: StatsOverview | null): { insight: string | null; 
   if (stats.byVerdict.malicious > 0) {
     insight = `Heads up: ${stats.byVerdict.malicious} malicious and ${stats.byVerdict.suspicious} suspicious event(s) are on record. ${worst ? `The strongest lead is ${worst.indicator}${worst.country ? ` (${worst.country})` : ''}.` : ''}`
   } else if (stats.flagged > 0) {
-    insight = `${stats.flagged} event(s) are flagged for review across ${stats.activeDevices} active device(s). Nothing confirmed malicious yet — worth a look.`
+    insight = `${stats.flagged} event(s) are flagged for review across ${stats.activeDevices} active device(s). Nothing confirmed malicious yet, worth a look.`
   } else if (stats.totalEvents > 0) {
     insight = `All quiet: ${stats.totalEvents.toLocaleString()} events processed and nothing flagged. Ask me anything to double-check.`
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, Play, Radio, Repeat, Square, Waves } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
@@ -116,7 +116,7 @@ export default function LiveCapture() {
       </div>
 
       {agents.length > 0 && (
-        <SectionCard title="Capture from a host" description="Capture once (a single 30-second run), or turn on Auto to keep capturing continuously — it runs on the server and keeps going even if you close this page, until you press Stop. Enter the interface number from tshark -D on that host.">
+        <SectionCard title="Capture from a host" description="Capture once (a single 30-second run), or turn on Auto to keep capturing continuously, it runs on the server and keeps going even if you close this page, until you press Stop. Enter the interface number from tshark -D on that host.">
           <ul className="divide-y divide-slate-100">
             {agents.map((a) => {
               const isAuto = Boolean(autoStream(a.id))

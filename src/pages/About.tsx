@@ -40,69 +40,12 @@ export default function AboutPage() {
     <div className="min-h-screen bg-white">
       <Navbar />
       <main className="pt-[72px]">
-        {/* Hero */}
-        <section className="bg-slate-900 py-20 lg:py-28">
-          <div className="container-x">
-            <span className="eyebrow text-brand-300">About HomeSIEM</span>
-            <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-              A SIEM that talks back
-              <span className="block text-brand-300">in a language you understand.</span>
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-200/90">
-              HomeSIEM combines the capabilities you would normally find spread across a SIEM, an IDS,
-              an NDR platform and a threat intelligence service, and folds an AI analyst on top of all of it.
-            </p>
-          </div>
-        </section>
-
-        {/* What we do */}
-        <section className="border-b border-slate-100 bg-slate-50/60 py-20 lg:py-28">
-          <div className="container-x">
-            <div className="grid gap-14 lg:grid-cols-[.9fr_1.1fr]">
-              <div>
-                <p className="text-base leading-relaxed text-slate-600">
-                  It ingests logs from Windows, Linux and macOS, captures live packets straight off the wire,
-                  correlates the two, and produces written investigations instead of raw detections. The result is
-                  a platform serious enough for a penetration tester and approachable enough for someone securing
-                  their first home network.
-                </p>
-
-                <div className="mt-8 rounded-xl border border-brand-200 bg-white p-5 shadow-card">
-                  <p className="text-sm font-semibold text-slate-900">Instead of this:</p>
-                  <p className="mt-1.5 font-mono text-sm text-slate-500">Alert: Port Scan, 192.168.1.24</p>
-                  <p className="mt-4 text-sm font-semibold text-brand-700">You get this:</p>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-700">
-                    &ldquo;Between 10:14 and 10:18, host 192.168.1.24 attempted connections to 317 unique ports on
-                    192.168.1.10. The pattern resembles automated reconnaissance. The activity originated shortly
-                    after a new device joined the network. Confidence: 91%.&rdquo;
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-5 sm:grid-cols-2">
-                {pillars.map((p) => (
-                  <article
-                    key={p.title}
-                    className="card group p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lift"
-                  >
-                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                      <p.icon size={21} />
-                    </span>
-                    <h3 className="mt-4 text-base font-bold text-slate-900">{p.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{p.body}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Founder */}
         <section className="py-20 lg:py-28">
           <div className="container-x">
             <div className="mx-auto max-w-4xl">
               <span className="eyebrow">The founder</span>
-              <h2 className="section-title mt-4">Built by <span className="text-brand-600">Samson Budigila</span></h2>
+              <h1 className="section-title mt-4">Built by <span className="text-brand-600">Samson Budigila</span></h1>
 
               <div className="mt-10 grid gap-10 lg:grid-cols-[280px_1fr]">
                 {/* Photo placeholder */}
@@ -121,7 +64,7 @@ export default function AboutPage() {
                   <p>
                     Samson Budigila is a cybersecurity enthusiast and software developer with a passion for
                     making enterprise-grade security tools accessible to everyone. Based in Tanzania, he
-                    built HomeSIEM out of a personal need: monitoring his own home network without paying
+                    built HomeSIEM out of a personal need, monitoring his own home network without paying
                     enterprise prices or juggling half a dozen separate tools.
                   </p>
                   <p>
@@ -158,8 +101,57 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Timeline */}
+        {/* What we do */}
         <section className="border-t border-slate-100 bg-slate-50/60 py-20 lg:py-28">
+          <div className="container-x">
+            <div className="grid gap-14 lg:grid-cols-[.9fr_1.1fr]">
+              <div>
+                <h2 className="section-title">
+                  What is HomeSIEM
+                </h2>
+                <p className="mt-5 text-base leading-relaxed text-slate-600">
+                  HomeSIEM combines the capabilities you would normally find spread across a SIEM, an IDS,
+                  an NDR platform and a threat intelligence service, and folds an AI analyst on top of all of it.
+                </p>
+                <p className="mt-4 text-base leading-relaxed text-slate-600">
+                  It ingests logs from Windows, Linux and macOS, captures live packets straight off the wire,
+                  correlates the two, and produces written investigations instead of raw detections. The result is
+                  a platform serious enough for a penetration tester and approachable enough for someone securing
+                  their first home network.
+                </p>
+
+                <div className="mt-8 rounded-xl border border-brand-200 bg-white p-5 shadow-card">
+                  <p className="text-sm font-semibold text-slate-900">Instead of this:</p>
+                  <p className="mt-1.5 font-mono text-sm text-slate-500">Alert: Port Scan, 192.168.1.24</p>
+                  <p className="mt-4 text-sm font-semibold text-brand-700">You get this:</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-700">
+                    &ldquo;Between 10:14 and 10:18, host 192.168.1.24 attempted connections to 317 unique ports on
+                    192.168.1.10. The pattern resembles automated reconnaissance. The activity originated shortly
+                    after a new device joined the network. Confidence: 91%.&rdquo;
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                {pillars.map((p) => (
+                  <article
+                    key={p.title}
+                    className="card group p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 hover:shadow-lift"
+                  >
+                    <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
+                      <p.icon size={21} />
+                    </span>
+                    <h3 className="mt-4 text-base font-bold text-slate-900">{p.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{p.body}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Timeline */}
+        <section className="py-20 lg:py-28">
           <div className="container-x">
             <div className="mx-auto max-w-3xl text-center">
               <span className="eyebrow">Our journey</span>
