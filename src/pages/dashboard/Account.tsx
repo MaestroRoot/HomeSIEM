@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Copy, Eye, EyeOff, KeyRound, Plus, ShieldCheck, Trash2, UserCog } from 'lucide-react'
+import { Copy, Eye, EyeOff, KeyRound, Loader2, Phone, Plus, ShieldCheck, Trash2, UserCog } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
 import { useAuth } from '@/context/AuthContext'
 import type { Role } from '@/context/AuthContext'
@@ -44,23 +44,34 @@ export default function Account() {
   const [copied, setCopied] = useState<string | null>(null)
   const [newKeyName, setNewKeyName] = useState('')
 
-  // Jina linahifadhiwa kwenye state ya ndani; PATCH inapigwa mtu akibonyeza
+  // Jina na simu huhifadhiwa kwenye state ya ndani; PATCH inapigwa mtu akibonyeza
   // Save, sio kila herufi anayoandika.
   const [name, setName] = useState(user?.name ?? '')
+  const [phone, setPhone] = useState(user?.phone ?? '')
   const [saving, setSaving] = useState(false)
   const [profileError, setProfileError] = useState('')
   const [saved, setSaved] = useState(false)
 
+  // MFA state
+  const [mfaBusy, setMfaBusy] = useState(false)
+  const [mfaOtpSent, setMfaOtpSent] = useState(false)
+  const [mfaTempToken, setMfaTempToken] = useState<string | null>(null)
+  const [mfaOtpCode, setMfaOtpCode] = useState('')
+  const [mfaOtpError, setMfaOtpError] = useState('')
+  const [mfaOtpVerifying, setMfaOtpVerifying] = useState(false)
+  const [mfaPendingAction, setMfaPendingAction] = useState<'enable' | 'disable' | null>(null)
+
   useEffect(() => {
     setName(user?.name ?? '')
-  }, [user?.name])
+    setPhone(user?.phone ?? '')
+  }, [user?.name, user?.phone])
 
   async function saveProfile() {
     if (name.trim().length < 2) return setProfileError('A name needs at least 2 characters.')
     setProfileError('')
     setSaving(true)
     try {
-      await updateUser({ name: name.trim() })
+      await updateUser({ name: name.trim(), phone: phone.trim() || null })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
     } catch (err) {
@@ -70,13 +81,53 @@ export default function Account() {
     }
   }
 
-  async function toggleMfa() {
+  async function requestMfaOtp(action: 'enable' | 'disable') {
     setProfileError('')
+    setMfaOtpError('')
+    setMfaPendingAction(action)
+    setMfaBusy(true)
     try {
-      await updateUser({ mfaEnabled: !user?.mfaEnabled })
+      const result = await api.post<{ tempToken: string; expiresInMinutes: number }>('/auth/mfa/request-otp', { action })
+      setMfaTempToken(result.tempToken)
+      setMfaOtpSent(true)
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : 'Could not change the MFA setting.')
+      setProfileError(err instanceof Error ? err.message : 'Could not send verification code.')
+      setMfaBusy(false)
+      setMfaPendingAction(null)
     }
+  }
+
+  async function verifyMfaOtp(e: React.FormEvent) {
+    e.preventDefault()
+    if (mfaOtpCode.length !== 6 || !mfaTempToken) return setMfaOtpError('Enter the 6-digit code.')
+    setMfaOtpError('')
+    setMfaOtpVerifying(true)
+    try {
+      await api.post('/auth/mfa/verify-toggle', {
+        tempToken: mfaTempToken,
+        code: mfaOtpCode,
+        action: mfaPendingAction,
+      })
+      await updateUser({ mfaEnabled: mfaPendingAction === 'enable' })
+      setMfaOtpSent(false)
+      setMfaOtpCode('')
+      setMfaTempToken(null)
+      setMfaPendingAction(null)
+    } catch (err) {
+      setMfaOtpError(err instanceof Error ? err.message : 'Verification failed.')
+    } finally {
+      setMfaOtpVerifying(false)
+      setMfaBusy(false)
+    }
+  }
+
+  function cancelMfaOtp() {
+    setMfaOtpSent(false)
+    setMfaOtpCode('')
+    setMfaOtpError('')
+    setMfaTempToken(null)
+    setMfaPendingAction(null)
+    setMfaBusy(false)
   }
 
   function createKey(e: React.FormEvent) {
@@ -137,11 +188,31 @@ export default function Account() {
               </div>
             </div>
 
+            <div>
+              <label className="label" htmlFor="p-phone">
+                Phone number
+              </label>
+              <div className="relative">
+                <Phone size={16} className="pointer-events-none absolute left-3.5 top-3.5 text-slate-400" />
+                <input
+                  id="p-phone"
+                  type="tel"
+                  className="input pl-10"
+                  placeholder="+255 712 345 678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-slate-400">
+                Used for security notifications and SMS alerts.
+              </p>
+            </div>
+
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={saveProfile}
-                disabled={saving || name.trim() === (user?.name ?? '')}
+                disabled={saving || (name.trim() === (user?.name ?? '') && (phone.trim() || '') === (user?.phone ?? ''))}
                 className="btn-primary btn-sm"
               >
                 {saving ? 'Saving…' : 'Save'}
@@ -167,49 +238,80 @@ export default function Account() {
           </div>
         </SectionCard>
 
-        <SectionCard title="Multi-factor authentication" description="Required for response actions such as host isolation">
+        <SectionCard title="Multi-factor authentication" description="Email-based verification code at sign-in">
           <div className="p-5">
-            <div className="flex items-start justify-between gap-4 rounded-lg border border-slate-200 px-4 py-3.5">
-              <div className="flex gap-3">
-                <span
-                  className={cx(
-                    'grid h-10 w-10 shrink-0 place-items-center rounded-lg',
-                    user?.mfaEnabled ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600',
-                  )}
-                >
-                  <ShieldCheck size={19} />
-                </span>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Authenticator app (TOTP)</p>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    {user?.mfaEnabled
-                      ? 'Enrolled. A 6-digit code is required at every sign-in.'
-                      : 'Not enrolled. Your account can be accessed with a password alone.'}
-                  </p>
+            {mfaOtpSent ? (
+              <form onSubmit={verifyMfaOtp} className="space-y-4">
+                <div className="flex items-start gap-2.5 rounded-lg border border-brand-200 bg-brand-50 px-3.5 py-3 text-sm text-brand-700">
+                  <ShieldCheck size={16} className="mt-0.5 shrink-0" />
+                  <span>
+                    A 6-digit code was sent to <strong>{user?.email}</strong>.
+                    Enter it below to {mfaPendingAction === 'enable' ? 'enable' : 'disable'} MFA.
+                  </span>
                 </div>
-              </div>
-              <button
-                type="button"
-                onClick={toggleMfa}
-                className={cx('btn-sm shrink-0', user?.mfaEnabled ? 'btn-ghost' : 'btn-primary')}
-              >
-                {user?.mfaEnabled ? 'Disable' : 'Enable MFA'}
-              </button>
-            </div>
 
-            {user?.mfaEnabled && (
-              <div className="mt-4 rounded-lg bg-slate-50 px-4 py-3">
-                <p className="text-xs font-semibold text-slate-700">Recovery codes</p>
-                <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-xs text-slate-600 sm:grid-cols-3">
-                  {['4f2a-9c1e', '7b30-e58d', 'a19c-4207', 'd6e1-83bf', '2c74-9a0d', 'f085-1e63'].map((c) => (
-                    <span key={c} className="rounded bg-white px-2 py-1 text-center">
-                      {c}
-                    </span>
-                  ))}
+                {mfaOtpError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-700">
+                    {mfaOtpError}
+                  </div>
+                )}
+
+                <div>
+                  <label className="label" htmlFor="mfa-otp-code">
+                    Verification code
+                  </label>
+                  <input
+                    id="mfa-otp-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    className="input text-center tracking-[0.4em] font-mono text-lg"
+                    placeholder="000000"
+                    maxLength={6}
+                    value={mfaOtpCode}
+                    onChange={(e) => setMfaOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    autoFocus
+                  />
                 </div>
-                <p className="mt-2 text-[11px] text-slate-500">
-                  Store these somewhere safe. Each code works once if you lose your authenticator.
-                </p>
+
+                <div className="flex items-center gap-2">
+                  <button type="submit" className="btn-primary btn-sm" disabled={mfaOtpVerifying}>
+                    {mfaOtpVerifying && <Loader2 size={14} className="animate-spin" />}
+                    {mfaOtpVerifying ? 'Verifying…' : 'Verify & confirm'}
+                  </button>
+                  <button type="button" onClick={cancelMfaOtp} className="btn-ghost btn-sm">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex items-start justify-between gap-4 rounded-lg border border-slate-200 px-4 py-3.5">
+                <div className="flex gap-3">
+                  <span
+                    className={cx(
+                      'grid h-10 w-10 shrink-0 place-items-center rounded-lg',
+                      user?.mfaEnabled ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600',
+                    )}
+                  >
+                    <ShieldCheck size={19} />
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Email verification code</p>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {user?.mfaEnabled
+                        ? 'Enabled. A 6-digit code is sent to your email at every sign-in.'
+                        : 'Disabled. Your account can be accessed with a password alone.'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => requestMfaOtp(user?.mfaEnabled ? 'disable' : 'enable')}
+                  disabled={mfaBusy}
+                  className={cx('btn-sm shrink-0', user?.mfaEnabled ? 'btn-ghost' : 'btn-primary')}
+                >
+                  {mfaBusy ? 'Sending…' : user?.mfaEnabled ? 'Disable' : 'Enable MFA'}
+                </button>
               </div>
             )}
           </div>

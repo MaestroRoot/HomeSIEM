@@ -483,7 +483,7 @@ function PlanCard({
           <dd className="font-semibold text-slate-700">{plan.limits.retentionDays} days</dd>
         </div>
         <div>
-          <dt className="text-slate-400">AI per day</dt>
+          <dt className="text-slate-400">Analysis per day</dt>
           <dd className="font-semibold text-slate-700">
             {plan.limits.aiRequestsPerDay === 0
               ? plan.plan === 'Free'

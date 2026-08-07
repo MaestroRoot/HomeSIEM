@@ -202,11 +202,11 @@ export default function RuleEngine() {
               {loading ? (
                 <tr><td colSpan={6} className="px-5 py-10 text-center text-slate-400"><Loader2 size={18} className="mx-auto animate-spin" /></td></tr>
               ) : rules.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-400">No rules yet. Create one above, or generate one with AI in the AI Rule Generator.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-400">No rules yet. Create one above, or use Custom Rules to describe a detection in plain language.</td></tr>
               ) : (
                 rules.map((r) => (
                   <tr key={r.id}>
-                    <td className="font-semibold text-slate-900">{r.name}{r.source === 'ai-generated' && <span className="ml-1.5 text-[10px] text-brand-600">AI</span>}</td>
+                    <td className="font-semibold text-slate-900">{r.name}{r.source === 'ai-generated' && <span className="ml-1.5 text-[10px] text-brand-600">auto</span>}</td>
                     <td className="font-mono text-[12px] text-slate-600">{r.conditionType} = {r.value}</td>
                     <td><StatusPill tone={sevTone[r.severity] ?? 'slate'}>{r.severity}</StatusPill></td>
                     <td className="tabular-nums font-semibold">{r.hits}</td>

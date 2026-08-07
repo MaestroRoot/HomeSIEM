@@ -123,7 +123,7 @@ export default function Assistant() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={Bot} title="AI Chat Assistant" subtitle="Ask about your network. The assistant can see your live events, devices and threat-intel verdicts." />
+      <PageHeader icon={Bot} title="Security Assistant" subtitle="Ask about your network. The assistant can see your live events, devices and threat-intel verdicts." />
 
       <SectionCard>
         <div className="flex h-[560px] flex-col">

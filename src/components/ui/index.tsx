@@ -164,10 +164,10 @@ export function StatCard({
 
 export function AiPanel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-xl border border-brand-200 bg-gradient-to-br from-brand-50 to-white p-5">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-5 dark:border-[#2a2a2a] dark:bg-[#111318]">
       <div className="mb-2.5 flex items-center gap-2">
         <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-600 text-xs font-bold text-white">
-          AI
+          ✦
         </span>
         <h3 className="text-sm font-bold text-brand-900">{title}</h3>
       </div>

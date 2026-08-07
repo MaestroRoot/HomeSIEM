@@ -12,7 +12,7 @@ const filters: Filter[] = ['All', ...moduleCategories]
 const categoryTone: Record<ModuleCategory, string> = {
   Core: 'bg-brand-50 text-brand-700 ring-brand-200',
   Collection: 'bg-sky-50 text-sky-700 ring-sky-200',
-  'AI Intelligence': 'bg-indigo-50 text-indigo-700 ring-indigo-200',
+  Tools: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
   Detection: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
   Response: 'bg-blue-50 text-blue-700 ring-blue-200',
   Posture: 'bg-slate-100 text-slate-600 ring-slate-200',

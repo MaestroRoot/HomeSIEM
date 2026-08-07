@@ -150,9 +150,9 @@ export default function AiRuleGenerator() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={Sparkles} title="AI Rule Generator" subtitle="Describe a detection in plain language and the AI writes the rule, ready to review and deploy." />
+      <PageHeader icon={Sparkles} title="Custom Rules" subtitle="Describe a detection in plain language and get a rule ready to review and deploy." />
 
-      <SectionCard title="Describe the detection" description="Plain English, the AI turns it into a rule">
+      <SectionCard title="Describe the detection" description="Plain English, we turn it into a rule">
         <div className="p-5">
           <textarea className="input min-h-[90px] w-full" placeholder="e.g. Alert when a device connects to a domain in Russia" value={desc} onChange={(e) => setDesc(e.target.value)} />
           <div className="mt-3 flex flex-wrap gap-2">
@@ -200,7 +200,7 @@ export default function AiRuleGenerator() {
       )}
 
       {raw && (
-        <SectionCard title="AI output">
+        <SectionCard title="Generated rule">
           <pre className="overflow-x-auto p-5 text-xs text-slate-600">{raw}</pre>
         </SectionCard>
       )}

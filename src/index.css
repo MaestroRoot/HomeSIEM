@@ -182,3 +182,59 @@
 .dark ::-webkit-scrollbar-track { background: #000000; }
 .dark ::-webkit-scrollbar-thumb { background: #333333; border-color: #000000; }
 .dark ::-webkit-scrollbar-thumb:hover { background: #4d4d4d; }
+
+/* ============================================================
+   Red / amber / emerald / orange color families.
+   These were missing, causing bright boxes on dark backgrounds.
+   ============================================================ */
+
+/* --- red --- */
+.dark .bg-red-50,
+.dark .bg-red-50\/50,
+.dark .bg-red-50\/60 { background-color: #1c1212; }
+.dark .bg-red-100 { background-color: #2a1515; }
+.dark .text-red-600 { color: #f87171; }
+.dark .text-red-700 { color: #fca5a5; }
+.dark .border-red-200 { border-color: #3a1c1c; }
+.dark .ring-red-200 { --tw-ring-color: #3a1c1c; }
+
+/* --- orange --- */
+.dark .bg-orange-50 { background-color: #1c1510; }
+.dark .text-orange-700 { color: #fdba74; }
+.dark .ring-orange-200 { --tw-ring-color: #3a2a18; }
+
+/* --- amber --- */
+.dark .bg-amber-50,
+.dark .bg-amber-50\/40,
+.dark .bg-amber-50\/50 { background-color: #1c1a10; }
+.dark .bg-amber-100 { background-color: #2a2510; }
+.dark .text-amber-600 { color: #fbbf24; }
+.dark .text-amber-700 { color: #fcd34d; }
+.dark .text-amber-800 { color: #fde68a; }
+.dark .text-amber-900 { color: #fef3c7; }
+.dark .border-amber-200 { border-color: #3a3310; }
+.dark .ring-amber-200 { --tw-ring-color: #3a3310; }
+
+/* --- emerald --- */
+.dark .bg-emerald-50,
+.dark .bg-emerald-50\/60 { background-color: #101c16; }
+.dark .bg-emerald-100 { background-color: #152a1e; }
+.dark .text-emerald-600 { color: #34d399; }
+.dark .text-emerald-700 { color: #6ee7b7; }
+.dark .text-emerald-800 { color: #a7f3d0; }
+.dark .border-emerald-200 { border-color: #1c3a28; }
+.dark .ring-emerald-200 { --tw-ring-color: #1c3a28; }
+
+/* --- extra slate --- */
+.dark .bg-slate-200 { background-color: #252525; }
+
+/* --- AiPanel gradient fix (Tailwind gradient stops use CSS vars) --- */
+.dark .from-brand-50 { --tw-gradient-from: #1c1c1c; }
+.dark .to-white { --tw-gradient-to: #0e0e0e; }
+
+/* --- hover states --- */
+.dark .hover\:bg-brand-100:hover { background-color: #1e2a3a; }
+.dark .hover\:bg-red-50:hover { background-color: #1c1212; }
+.dark .hover\:bg-red-100:hover { background-color: #2a1515; }
+.dark .hover\:bg-amber-50:hover { background-color: #1c1a10; }
+.dark .hover\:bg-amber-100:hover { background-color: #2a2510; }

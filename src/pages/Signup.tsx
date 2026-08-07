@@ -93,7 +93,7 @@ export default function Signup() {
         'Free plan, no card needed to start',
         'Two devices and core alerting at no cost',
         'Upgrade any time with M-Pesa, Airtel, Yas or a bank card',
-        'AI packet and log analysis from the Home plan up',
+        'Packet and log analysis from the Home plan up',
       ]}
       footer={
         <>

@@ -75,7 +75,7 @@ export default function AuthLayout({
           <div className="mt-10 rounded-xl border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
             <p className="flex items-start gap-2.5 text-sm leading-relaxed text-white">
               <span className="mt-px grid h-6 w-6 shrink-0 place-items-center rounded bg-white text-[10px] font-bold text-brand-700">
-                AI
+                ✦
               </span>
               <span>
                 “Five devices are communicating with the same suspicious IP, suggesting a possible shared

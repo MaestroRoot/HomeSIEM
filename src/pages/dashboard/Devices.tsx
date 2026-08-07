@@ -13,6 +13,7 @@ import {
   Server,
   Smartphone,
   Trash2,
+  Waves,
   X,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -154,10 +155,15 @@ export default function Devices() {
         title="Device Management"
         subtitle="Register the phones, laptops and other devices you want monitored. Devices a sensor sees for the first time show up here automatically."
         actions={
-          <button type="button" onClick={() => setShowForm((v) => !v)} className="btn-primary btn-sm">
-            {showForm ? <X size={14} /> : <Plus size={14} />}
-            {showForm ? 'Cancel' : 'Add device'}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link to="/dashboard/capture" className="btn-ghost btn-sm">
+              <Waves size={14} /> Live Capture
+            </Link>
+            <button type="button" onClick={() => setShowForm((v) => !v)} className="btn-primary btn-sm">
+              {showForm ? <X size={14} /> : <Plus size={14} />}
+              {showForm ? 'Cancel' : 'Add device'}
+            </button>
+          </div>
         }
       />
 

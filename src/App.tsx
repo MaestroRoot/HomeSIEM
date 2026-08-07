@@ -16,7 +16,6 @@ import Devices from './pages/dashboard/Devices'
 import LogCollection from './pages/dashboard/LogCollection'
 import LiveCapture from './pages/dashboard/LiveCapture'
 import PcapUpload from './pages/dashboard/PcapUpload'
-import AiPacketAnalysis from './pages/dashboard/AiPacketAnalysis'
 import ThreatDetection from './pages/dashboard/ThreatDetection'
 import AiLogAnalyzer from './pages/dashboard/AiLogAnalyzer'
 import IocScanner from './pages/dashboard/IocScanner'
@@ -80,7 +79,6 @@ export default function App() {
           <Route path="logs/parsers" element={<LogParsers />} />
           <Route path="capture" element={<LiveCapture />} />
           <Route path="pcap" element={<PcapUpload />} />
-          <Route path="ai-packets" element={<AiPacketAnalysis />} />
           <Route path="detection" element={<ThreatDetection />} />
           <Route path="ai-logs" element={<AiLogAnalyzer />} />
           <Route path="ioc" element={<IocScanner />} />

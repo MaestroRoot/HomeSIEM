@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react'
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from 'lucide-react'
 import AuthLayout from '@/components/auth/AuthLayout'
 import GoogleButton, { AuthDivider } from '@/components/auth/GoogleButton'
 import { useAuth } from '@/context/AuthContext'
 
 export default function Login() {
-  const { login, loginWithGoogle } = useAuth()
+  const { login, loginWithGoogle, verifyMfa, mfaRequired, clearMfa } = useAuth()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -16,6 +16,22 @@ export default function Login() {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [googleBusy, setGoogleBusy] = useState(false)
+
+  // MFA OTP state
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaBusy, setMfaBusy] = useState(false)
+  const [mfaError, setMfaError] = useState('')
+
+  useEffect(() => {
+    document.title = 'Login, HomeSIEM'
+  }, [])
+
+  // Cleanup MFA state on unmount
+  useEffect(() => {
+    return () => {
+      if (mfaRequired) clearMfa()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function onGoogle() {
     setError('')
@@ -29,10 +45,6 @@ export default function Login() {
     }
   }
 
-  useEffect(() => {
-    document.title = 'Login, HomeSIEM'
-  }, [])
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
@@ -42,20 +54,105 @@ export default function Login() {
 
     setBusy(true)
     try {
-      await login(email, password)
-      navigate('/dashboard', { replace: true })
+      const result = await login(email, password)
+      if (!result.mfaRequired) {
+        navigate('/dashboard', { replace: true })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed.')
       setBusy(false)
     }
   }
 
+  async function onMfaVerify(e: React.FormEvent) {
+    e.preventDefault()
+    setMfaError('')
+    if (mfaCode.length !== 6) return setMfaError('Enter the 6-digit code.')
+
+    setMfaBusy(true)
+    try {
+      await verifyMfa(mfaCode)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      setMfaError(err instanceof Error ? err.message : 'Verification failed.')
+      setMfaBusy(false)
+    }
+  }
+
+  function onMfaCancel() {
+    clearMfa()
+    setMfaCode('')
+    setMfaError('')
+    setBusy(false)
+  }
+
+  // --- MFA OTP screen ---
+  if (mfaRequired) {
+    return (
+      <AuthLayout
+        title="Verify your identity"
+        subtitle="A 6-digit code was sent to your email. Enter it below to complete sign in."
+        highlights={[]}
+        footer={
+          <button
+            type="button"
+            onClick={onMfaCancel}
+            className="font-semibold text-brand-600 hover:text-brand-800"
+          >
+            ← Back to sign in
+          </button>
+        }
+      >
+        <form onSubmit={onMfaVerify} className="space-y-4" noValidate>
+          {mfaError && (
+            <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-700">
+              <AlertCircle size={16} className="mt-0.5 shrink-0" />
+              <span>{mfaError}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 rounded-lg border border-brand-200 bg-brand-50 px-3.5 py-3 text-sm text-brand-700">
+            <ShieldCheck size={16} className="shrink-0" />
+            <span>Multi-factor authentication is enabled on this account.</span>
+          </div>
+
+          <div>
+            <label className="label" htmlFor="mfa-code">
+              Verification code
+            </label>
+            <div className="relative">
+              <ShieldCheck size={16} className="pointer-events-none absolute left-3.5 top-3.5 text-slate-400" />
+              <input
+                id="mfa-code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                className="input pl-10 text-center tracking-[0.4em] font-mono text-lg"
+                placeholder="000000"
+                maxLength={6}
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <button type="submit" className="btn-primary w-full py-3" disabled={mfaBusy}>
+            {mfaBusy && <Loader2 size={16} className="animate-spin" />}
+            {mfaBusy ? 'Verifying…' : 'Verify & sign in'}
+          </button>
+        </form>
+      </AuthLayout>
+    )
+  }
+
+  // --- Normal login screen ---
   return (
     <AuthLayout
       title="Welcome back"
       subtitle="Sign in to your Home SOC and pick up where you left off."
       highlights={[
-        'Live packet capture with AI verdicts',
+        'Live packet capture with verdicts',
         'Correlated alerts across every device',
         'Written investigations, not raw log lines',
         'Threat intelligence refreshed automatically',

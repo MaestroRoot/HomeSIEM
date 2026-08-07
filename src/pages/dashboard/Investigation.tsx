@@ -27,7 +27,7 @@ export default function Investigation() {
     <div className="space-y-6">
       <PageHeader
         icon={Activity}
-        title="AI Investigation"
+        title="Investigation"
         subtitle="A written case built from your flagged events, what the devices did, whether it is a real threat, and what to do next."
         actions={
           <button type="button" className="btn-primary btn-sm" onClick={run} disabled={busy}>
@@ -39,7 +39,7 @@ export default function Investigation() {
       {busy ? (
         <SectionCard><div className="flex items-center gap-2 p-6 text-sm text-slate-500"><Loader2 size={16} className="animate-spin" /> Correlating your flagged events and writing the case…</div></SectionCard>
       ) : report ? (
-        <AiPanel title="Investigation write-up">
+        <AiPanel title="Investigation summary">
           <p className="whitespace-pre-wrap">{report}</p>
         </AiPanel>
       ) : (
@@ -47,7 +47,7 @@ export default function Investigation() {
           <EmptyState
             icon={Activity}
             title="No investigation yet"
-            message="Click Investigate and the AI reads your flagged events, then writes a narrative case with a confidence estimate."
+            message="Click Investigate and your flagged events are analyzed, then a narrative case with a confidence estimate is written."
           />
         </SectionCard>
       )}

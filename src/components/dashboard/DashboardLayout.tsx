@@ -11,6 +11,48 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import { CommandPalette, KeyboardHelp } from './CommandPalette'
 import Onboarding from './Onboarding'
 
+const routeTitles: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/dashboard/agents': 'Install Sensor',
+  '/dashboard/devices': 'Devices',
+  '/dashboard/logs': 'Log Collection',
+  '/dashboard/capture': 'Live Capture',
+  '/dashboard/pcap': 'Packet Inspector',
+  '/dashboard/ai-packets': 'Packet Analysis',
+  '/dashboard/detection': 'Threat Detection',
+  '/dashboard/ai-logs': 'Log Explorer',
+  '/dashboard/ioc': 'IOC Scanner',
+  '/dashboard/alerts': 'Alerts',
+  '/dashboard/timeline': 'Timeline',
+  '/dashboard/search': 'Search',
+  '/dashboard/incidents': 'Incidents',
+  '/dashboard/assistant': 'Assistant',
+  '/dashboard/reports': 'Reports',
+  '/dashboard/intel': 'Threat Intelligence',
+  '/dashboard/rules': 'Rule Engine',
+  '/dashboard/ai-rules': 'Custom Rules',
+  '/dashboard/visualization': 'Visualization',
+  '/dashboard/inventory': 'Network Inventory',
+  '/dashboard/vulnerabilities': 'Vulnerabilities',
+  '/dashboard/forensics': 'Forensics',
+  '/dashboard/investigation': 'Investigation',
+  '/dashboard/score': 'Security Score',
+  '/dashboard/account': 'Account',
+  '/dashboard/subscriptions': 'Subscriptions',
+}
+
+function TitleUpdater() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    // Check exact match first, then prefix match for sub-routes
+    const title = routeTitles[pathname]
+      || Object.entries(routeTitles).find(([k]) => pathname.startsWith(k + '/'))?.[1]
+      || 'HomeSIEM'
+    document.title = `${title} · HomeSIEM`
+  }, [pathname])
+  return null
+}
+
 export default function DashboardLayout() {
   const { user, loading } = useAuth()
   const [navOpen, setNavOpen] = useState(false)
@@ -18,7 +60,7 @@ export default function DashboardLayout() {
 
   if (loading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-white">
+      <div className="grid min-h-screen place-items-center bg-white dark:bg-[#0e0e0e]">
         <div className="flex flex-col items-center gap-3">
           <span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
           <p className="text-sm text-slate-500">Loading your Home SOC…</p>
@@ -33,6 +75,7 @@ export default function DashboardLayout() {
     <ThemeProvider>
       <SubscriptionProvider>
         <CollectorProvider>
+          <TitleUpdater />
           <DashboardShell navOpen={navOpen} setNavOpen={setNavOpen} />
         </CollectorProvider>
       </SubscriptionProvider>

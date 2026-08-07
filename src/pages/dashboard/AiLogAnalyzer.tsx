@@ -62,7 +62,7 @@ export default function AiLogAnalyzer() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={FileSearch} title="AI Log Analyzer" subtitle="Paste or upload log lines (syslog, auth.log, nginx, Windows events) and the AI explains what happened." />
+      <PageHeader icon={FileSearch} title="Log Explorer" subtitle="Paste or upload log lines (syslog, auth.log, nginx, Windows events) and get an explanation of what happened." />
 
       <SectionCard title="Log input" description="Up to ~20,000 characters">
         <div className="p-5">
@@ -93,11 +93,11 @@ export default function AiLogAnalyzer() {
       </SectionCard>
 
       {busy && (
-        <SectionCard><div className="flex items-center gap-2 p-5 text-sm text-slate-500"><Loader2 size={16} className="animate-spin" /> The AI is reading your log…</div></SectionCard>
+        <SectionCard><div className="flex items-center gap-2 p-5 text-sm text-slate-500"><Loader2 size={16} className="animate-spin" /> Reading your log…</div></SectionCard>
       )}
 
       {result && (
-        <AiPanel title="What the AI found">
+        <AiPanel title="What we found">
           <p className="whitespace-pre-wrap">{result}</p>
         </AiPanel>
       )}

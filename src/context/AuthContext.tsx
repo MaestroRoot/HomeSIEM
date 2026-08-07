@@ -22,6 +22,7 @@ export interface User {
   id: string
   name: string
   email: string
+  phone: string | null
   role: Role
   plan: Plan
   mfaEnabled: boolean
@@ -35,20 +36,35 @@ export interface User {
 interface SessionResponse {
   user: User
   isNewUser: boolean
+  mfaRequired?: boolean
+  mfaTempToken?: string
+}
+
+/** Return type for login — tells caller whether MFA is required. */
+export interface LoginResult {
+  user: User
+  mfaRequired: boolean
 }
 
 interface AuthState {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<User>
+  /** MFA state: temp token when MFA is required during login */
+  mfaRequired: boolean
+  mfaTempToken: string | null
+  login: (email: string, password: string) => Promise<LoginResult>
+  /** Complete MFA verification after login */
+  verifyMfa: (code: string) => Promise<User>
   signup: (payload: { name: string; email: string; password: string }) => Promise<User>
   /** Works for both signing in and signing up: Firebase creates the account
    *  on first use, and our backend provisions it the same way either way. */
   loginWithGoogle: () => Promise<User>
   logout: () => Promise<void>
-  updateUser: (patch: Partial<Pick<User, 'name' | 'avatarUrl' | 'mfaEnabled'>>) => Promise<User>
+  updateUser: (patch: Partial<Pick<User, 'name' | 'phone' | 'avatarUrl' | 'mfaEnabled'>>) => Promise<User>
   /** Baada ya kubadilisha kifurushi, ukurasa wa subscriptions unaitumia. */
   refreshUser: () => Promise<User | null>
+  /** Clear MFA state (e.g. on cancel) */
+  clearMfa: () => void
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined)
@@ -66,6 +82,8 @@ const AuthContext = createContext<AuthState | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mfaRequired, setMfaRequired] = useState(false)
+  const [mfaTempToken, setMfaTempToken] = useState<string | null>(null)
 
   /** Login/signup zinaita `/auth/session` zenyewe. Bila bendera hii,
    *  `onAuthStateChanged` ingeipiga `/auth/me` tena mara moja baada yake. */
@@ -101,8 +119,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password)
       const session = await api.post<SessionResponse>('/auth/session', {})
+
+      if (session.mfaRequired && session.mfaTempToken) {
+        setMfaRequired(true)
+        setMfaTempToken(session.mfaTempToken)
+        return { user: session.user, mfaRequired: true }
+      }
+
       setUser(session.user)
-      return session.user
+      return { user: session.user, mfaRequired: false }
     } catch (error) {
       if (error instanceof ApiError) throw error
       throw new Error(firebaseErrorMessage(error))
@@ -110,6 +135,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signingIn.current = false
       setLoading(false)
     }
+  }, [])
+
+  const verifyMfa = useCallback<AuthState['verifyMfa']>(async (code) => {
+    if (!mfaTempToken) throw new Error('No MFA session in progress.')
+
+    const result = await api.post<{ user: User }>('/auth/mfa/verify', {
+      tempToken: mfaTempToken,
+      code,
+    })
+    setUser(result.user)
+    setMfaRequired(false)
+    setMfaTempToken(null)
+    return result.user
+  }, [mfaTempToken])
+
+  const clearMfa = useCallback(() => {
+    setMfaRequired(false)
+    setMfaTempToken(null)
   }, [])
 
   const signup = useCallback<AuthState['signup']>(async ({ name, email, password }) => {
@@ -146,6 +189,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const session = await api.post<SessionResponse>('/auth/session', {
         name: credential.user.displayName ?? undefined,
       })
+
+      if (session.mfaRequired && session.mfaTempToken) {
+        setMfaRequired(true)
+        setMfaTempToken(session.mfaTempToken)
+        return session.user
+      }
+
       setUser(session.user)
       return session.user
     } catch (error) {
@@ -166,6 +216,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     await signOut(auth)
     setUser(null)
+    setMfaRequired(false)
+    setMfaTempToken(null)
   }, [])
 
   const updateUser = useCallback<AuthState['updateUser']>(async (patch) => {
@@ -182,8 +234,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ user, loading, login, signup, loginWithGoogle, logout, updateUser, refreshUser }),
-    [user, loading, login, signup, loginWithGoogle, logout, updateUser, refreshUser],
+    () => ({
+      user, loading, mfaRequired, mfaTempToken,
+      login, verifyMfa, signup, loginWithGoogle, logout, updateUser, refreshUser, clearMfa,
+    }),
+    [user, loading, mfaRequired, mfaTempToken, login, verifyMfa, signup, loginWithGoogle, logout, updateUser, refreshUser, clearMfa],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

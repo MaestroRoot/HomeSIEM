@@ -71,7 +71,7 @@ export default function CloudflareGatewayCard() {
   }
 
   async function disconnect() {
-    if (!window.confirm('Disconnect Cloudflare Gateway? DNS logs will stop flowing in until you provision again.')) return
+    if (!window.confirm('Disconnect DNS monitoring? Phone traffic will stop being monitored until you reconnect.')) return
     try {
       await api.del('/cloudflare-gateway')
       await load()
@@ -84,8 +84,8 @@ export default function CloudflareGatewayCard() {
 
   return (
     <SectionCard
-      title="3. Monitor phones / whole home (Cloudflare Gateway)"
-      description="One-click setup — we create a private DNS location in our Cloudflare account. Free: 1M queries/mo, 7-day logs. Works on mobile data too."
+      title="3. Monitor phones / whole home (DNS Setup)"
+      description="One-click setup — we create a private DNS location for your account. Free: 1M queries/mo, 7-day logs. Works on mobile data too."
       right={<Wifi size={18} className="text-slate-400" />}
     >
       <div className="space-y-4 p-5">
@@ -138,8 +138,8 @@ export default function CloudflareGatewayCard() {
           <>
             <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
               <p className="text-sm text-slate-700">
-                <strong>Zero setup required.</strong> We host the Cloudflare Gateway — you just click Connect.
-                Your org gets a private DNS location (e.g. <code className="font-mono text-[12px]">org-abc123.dns.cloudflare-gateway.com</code>)
+                <strong>Zero setup required.</strong> We handle everything — you just click Enable. Your account gets a private DNS location
+                (e.g. <code className="font-mono text-[12px]">org-abc123.dns.cloudflare-gateway.com</code>)
                 with 1M free queries/month and 7-day log retention.
               </p>
             </div>
@@ -156,14 +156,14 @@ export default function CloudflareGatewayCard() {
                 {provisioning
                   ? <Loader2 size={14} className="animate-spin" />
                   : <Globe size={14} />}
-                {provisioning ? 'Provisioning…' : 'Connect Cloudflare Gateway'}
+                {provisioning ? 'Provisioning…' : 'Enable phone monitoring'}
               </button>
               {provisioning && <span className="text-xs text-slate-500">Creating your private DNS location…</span>}
             </div>
 
             <p className="text-xs text-slate-500">
-              After connecting, you'll get a <strong>DoH hostname</strong> for iPhone (QR) and Android (Private DNS).
-              Works on WiFi and mobile data. No Cloudflare account needed on your side.
+              After enabling, you'll get a <strong>DoH hostname</strong> for iPhone (QR) and Android (Private DNS).
+              Works on WiFi and mobile data. No account needed on your side.
             </p>
           </>
         )}

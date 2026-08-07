@@ -4,7 +4,6 @@ import {
   BarChart3,
   Bot,
   Boxes,
-  Brain,
   Clock,
   Cpu,
   CreditCard,
@@ -25,7 +24,6 @@ import {
   ShieldCheck,
   Siren,
   Sparkles,
-  Waves,
   Wrench,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -33,7 +31,7 @@ import type { LucideIcon } from 'lucide-react'
 export type ModuleCategory =
   | 'Core'
   | 'Collection'
-  | 'AI Intelligence'
+  | 'Tools'
   | 'Detection'
   | 'Response'
   | 'Posture'
@@ -64,8 +62,8 @@ export const modules: AppModule[] = [
     category: 'Core',
     tagline: 'Your whole network at a glance',
     description:
-      'Total events, active alerts, live traffic, suspicious IPs, malware detections, packet statistics, AI threat score and overall risk level, on one screen that updates in real time.',
-    bullets: ['Live event & alert counters', 'AI threat score + risk level', 'Traffic and protocol charts'],
+      'Total events, active alerts, live traffic, suspicious IPs, malware detections, packet statistics, threat score and overall risk level, on one screen that updates in real time.',
+    bullets: ['Live event & alert counters', 'Threat score + risk level', 'Traffic and protocol charts'],
     featured: true,
   },
   {
@@ -84,13 +82,13 @@ export const modules: AppModule[] = [
   {
     id: 'agents',
     no: 3,
-    name: 'Agents',
+    name: 'Install Sensor',
     path: '/dashboard/agents',
     icon: Cpu,
     category: 'Collection',
     tagline: 'Set up a host once, run everything from here',
     description:
-      'Generate a token and run one command on a host. The agent enrolls and stays running, then scans, forensics, live capture and log collection are triggered from the dashboard, no repeated commands.',
+      'Generate a token and run one command on a host. The sensor enrolls and stays running, then scans, forensics, live capture and log collection are triggered from the dashboard, no repeated commands.',
     bullets: ['One-time setup per host', 'scan · forensics · capture · logs', 'Trigger by clicking, not commands'],
     featured: true,
   },
@@ -107,41 +105,16 @@ export const modules: AppModule[] = [
     bullets: ['Windows · Linux · macOS agents', 'Firewall, web server & cloud logs', 'Live ingest health monitoring'],
   },
   {
-    id: 'capture',
-    no: 5,
-    name: 'Live Network Capture',
-    path: '/dashboard/capture',
-    icon: Waves,
-    category: 'Collection',
-    tagline: 'Packet capture without Wireshark',
-    description:
-      'Capture live traffic through Npcap, WinPcap or libpcap. Watch TCP, UDP, DNS, HTTP, HTTPS metadata, ICMP and ARP stream past, with BPF filters and live statistics.',
-    bullets: ['BPF filters: port 80, host 192.168.1.5, tcp', 'Top talkers, protocols, conversations', 'Live bandwidth graphs'],
-    featured: true,
-  },
-  {
     id: 'pcap',
     no: 6,
-    name: 'PCAP Upload & Offline Analysis',
+    name: 'Packet Inspector',
     path: '/dashboard/pcap',
     icon: FileUp,
     category: 'Collection',
     tagline: 'Drop a capture, get an answer',
     description:
-      'Upload attack.pcap or network.pcapng and let the AI engine dissect it offline, surfacing DNS tunneling, data exfiltration, SQL injection traffic, port scans, SMB enumeration and beaconing.',
+      'Upload attack.pcap or network.pcapng and let the engine dissect it offline, surfacing DNS tunneling, data exfiltration, SQL injection traffic, port scans, SMB enumeration and beaconing.',
     bullets: ['.pcap / .pcapng offline analysis', 'Automatic finding extraction', 'Exportable analysis report'],
-  },
-  {
-    id: 'ai-packets',
-    no: 7,
-    name: 'AI Packet Analysis',
-    path: '/dashboard/ai-packets',
-    icon: Brain,
-    category: 'AI Intelligence',
-    tagline: 'The flagship feature',
-    description:
-      'The AI examines packets, sessions, flows, headers, payloads, TLS metadata, DNS, timing, sequence and entropy, then explains in plain language what the traffic actually is and how confident it is.',
-    bullets: ['Flow, header, payload & entropy analysis', 'Plain-language verdict with confidence %', 'Reasoning shown, not just a score'],
     featured: true,
   },
   {
@@ -159,13 +132,13 @@ export const modules: AppModule[] = [
   {
     id: 'ai-logs',
     no: 9,
-    name: 'AI Log Analyzer',
+    name: 'Log Explorer',
     path: '/dashboard/ai-logs',
     icon: FileSearch,
-    category: 'AI Intelligence',
+    category: 'Tools',
     tagline: 'Upload a log, read a story',
     description:
-      'Feed it Windows.evtx, syslog, apache.log or nginx.log and the AI explains what happened, builds a timeline, flags suspicious accounts and failed logins, and recommends next steps.',
+      'Feed it Windows.evtx, syslog, apache.log or nginx.log and it explains what happened, builds a timeline, flags suspicious accounts and failed logins, and recommends next steps.',
     bullets: ['.evtx · syslog · apache · nginx', 'Auto-built incident timeline', 'Suspicious account detection'],
   },
   {
@@ -189,8 +162,8 @@ export const modules: AppModule[] = [
     category: 'Detection',
     tagline: 'Critical, High, Medium, Low',
     description:
-      'Every detection lands here. Open one and you get the timeline, the evidence, the AI explanation of why it fired, and the recommended actions to take right now.',
-    bullets: ['Severity-ranked live feed', 'Evidence + AI explanation per alert', 'One-click actions'],
+      'Every detection lands here. Open one and you get the timeline, the evidence, the explanation of why it fired, and the recommended actions to take right now.',
+    bullets: ['Severity-ranked live feed', 'Evidence + explanation per alert', 'One-click actions'],
     featured: true,
   },
   {
@@ -232,10 +205,10 @@ export const modules: AppModule[] = [
   {
     id: 'assistant',
     no: 15,
-    name: 'AI Chat Assistant',
+    name: 'Security Assistant',
     path: '/dashboard/assistant',
     icon: Bot,
-    category: 'AI Intelligence',
+    category: 'Tools',
     tagline: 'Ask your SOC anything',
     description:
       '"Explain this alert." "Why is this suspicious?" "Summarize today\'s attacks." "What should I do?" a security analyst that has already read all of your data.',
@@ -281,13 +254,13 @@ export const modules: AppModule[] = [
   {
     id: 'ai-rules',
     no: 19,
-    name: 'AI Rule Generator',
+    name: 'Custom Rules',
     path: '/dashboard/ai-rules',
     icon: Sparkles,
-    category: 'AI Intelligence',
+    category: 'Tools',
     tagline: 'Describe it, get the rule',
     description:
-      'Type "Detect SSH brute force" and the AI writes the complete detection rule, condition, window, threshold, severity and action, ready to deploy.',
+      'Type "Detect SSH brute force" and get the complete detection rule, condition, window, threshold, severity and action, ready to deploy.',
     bullets: ['Natural language to detection rule', 'Editable before deployment', 'Tuning suggestions included'],
   },
   {
@@ -341,10 +314,10 @@ export const modules: AppModule[] = [
   {
     id: 'investigation',
     no: 24,
-    name: 'AI Investigation',
+    name: 'Investigation',
     path: '/dashboard/investigation',
     icon: Activity,
-    category: 'AI Intelligence',
+    category: 'Tools',
     tagline: 'A written case, not a raw alert',
     description:
       'Instead of "Alert: Port Scan", you get: "Between 10:14 and 10:18, host 192.168.1.24 attempted connections to 317 unique ports on 192.168.1.10. The pattern resembles automated reconnaissance. Confidence: 91%."',
@@ -399,7 +372,7 @@ export const publicModules = modules.filter((m) => !m.internal)
 export const moduleCategories: ModuleCategory[] = [
   'Core',
   'Collection',
-  'AI Intelligence',
+  'Tools',
   'Detection',
   'Response',
   'Posture',

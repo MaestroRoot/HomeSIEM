@@ -77,25 +77,25 @@ export default function AiPacketAnalysis() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={Brain} title="AI Packet Analysis" subtitle="Upload a capture. It is dissected with tshark, enriched with GeoIP and threat intel, then the AI explains what the traffic is." />
+      <PageHeader icon={Brain} title="Packet Analysis" subtitle="Upload a capture. It is parsed, enriched with GeoIP and threat intel, then analyzed to explain what the traffic is." />
 
       <SectionCard>
         <div className="m-5 grid place-items-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/60 px-6 py-12 text-center">
           <span className="grid h-14 w-14 place-items-center rounded-2xl bg-brand-600 text-white"><UploadCloud size={26} /></span>
           <p className="mt-4 font-bold text-slate-900">Drop or choose a .pcap file</p>
-          <p className="mt-1 text-sm text-slate-500">Up to 200 MB. The AI reads the enriched summary, not raw packets.</p>
+          <p className="mt-1 text-sm text-slate-500">Up to 200 MB. The engine reads the enriched summary, not raw packets.</p>
           <input ref={inputRef} type="file" accept=".pcap,.pcapng,.cap" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           <button type="button" className="btn-primary mt-4" onClick={() => inputRef.current?.click()} disabled={stage !== 'idle'}>
             {stage === 'idle' ? 'Choose file' : <Loader2 size={15} className="animate-spin" />}
           </button>
-          {stage === 'parsing' && <p className="mt-3 text-xs text-slate-500">Dissecting capture with tshark…</p>}
-          {stage === 'thinking' && <p className="mt-3 text-xs text-slate-500">AI is analysing the traffic…</p>}
+          {stage === 'parsing' && <p className="mt-3 text-xs text-slate-500">Parsing capture file…</p>}
+          {stage === 'thinking' && <p className="mt-3 text-xs text-slate-500">Analyzing the traffic…</p>}
           {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
         </div>
       </SectionCard>
 
       {ai && (
-        <AiPanel title="What the AI found in this capture">
+        <AiPanel title="What we found in this capture">
           <p className="whitespace-pre-wrap">{ai}</p>
         </AiPanel>
       )}

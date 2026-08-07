@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
-import { AlertTriangle, CheckCircle2, FileUp, Globe2, Loader2, UploadCloud } from 'lucide-react'
-import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import { AlertTriangle, Brain, CheckCircle2, FileUp, Globe2, Loader2, UploadCloud } from 'lucide-react'
+import { AiPanel, PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
-import type { PcapAnalysis, Verdict } from '@/lib/types'
+import type { AiText, PcapAnalysis, Verdict } from '@/lib/types'
 
 const verdictTone: Record<Verdict, 'red' | 'amber' | 'green' | 'slate'> = {
   malicious: 'red',
@@ -17,24 +17,52 @@ function geoLabel(geo: { isPrivate: boolean; country: string | null; asn: number
   return [geo.country, geo.asnOrg].filter(Boolean).join(' · ') || '—'
 }
 
+function summarise(a: PcapAnalysis): string {
+  const flagged = a.findings.filter((f) => f.severity === 'malicious' || f.severity === 'suspicious')
+  const domains = a.dnsQueries.slice(0, 30).map((q) => `${q.src} -> ${q.domain} [${q.verdict ?? 'unknown'}]`).join('\n')
+  const flows = a.flows.slice(0, 20).map((f) => `${f.src} -> ${f.dst}:${f.dstPort ?? ''} ${f.protocol} pkts=${f.packets} [${f.verdict ?? 'unknown'}] ${f.geo?.country ?? ''}`).join('\n')
+  return (
+    `Capture ${a.fileName}: ${a.packetsRead} packets, ${a.dnsQueries.length} DNS queries, ` +
+    `${a.flows.length} flows, ${a.uniqueExternalIps} external IPs, ${flagged.length} flagged findings.\n\n` +
+    `DNS:\n${domains}\n\nFlows:\n${flows}`
+  )
+}
+
 export default function PcapUpload() {
   const [file, setFile] = useState<{ name: string; size: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<PcapAnalysis | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [aiEnabled, setAiEnabled] = useState(true)
+  const [aiBusy, setAiBusy] = useState(false)
+  const [aiResult, setAiResult] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function analyze(f: File) {
     setFile({ name: f.name, size: (f.size / 1024 / 1024).toFixed(1) + ' MB' })
     setResult(null)
     setError(null)
+    setAiResult(null)
     setBusy(true)
     try {
       const form = new FormData()
       form.append('file', f)
       const data = await api.upload<PcapAnalysis>('/capture/pcap', form)
       setResult(data)
+
+      // Auto-run AI summary if enabled
+      if (aiEnabled) {
+        setAiBusy(true)
+        try {
+          const res = await api.post<AiText>('/ai/analyze', { kind: 'capture', content: summarise(data) })
+          setAiResult(res.reply)
+        } catch {
+          // AI failure is non-critical
+        } finally {
+          setAiBusy(false)
+        }
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'The capture could not be analysed.')
     } finally {
@@ -53,7 +81,7 @@ export default function PcapUpload() {
     <div className="space-y-6">
       <PageHeader
         icon={FileUp}
-        title="PCAP Upload & Offline Analysis"
+        title="Packet Inspector"
         subtitle="Drop a .pcap capture. The server extracts every DNS lookup and connection, locates each destination with GeoIP, and checks it against threat intelligence."
       />
 
@@ -89,10 +117,20 @@ export default function PcapUpload() {
             className="hidden"
             onChange={(e) => onFiles(e.target.files)}
           />
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <button type="button" className="btn-primary" onClick={() => inputRef.current?.click()} disabled={busy}>
               {busy ? <Loader2 size={15} className="animate-spin" /> : 'Browse files'}
             </button>
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              <input
+                type="checkbox"
+                checked={aiEnabled}
+                onChange={(e) => setAiEnabled(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+              />
+              <Brain size={14} className="text-brand-600" />
+              Auto-analyze with summary
+            </label>
           </div>
           <p className="mt-4 max-w-md text-xs text-slate-400">
             Capture on your own network with Wireshark (File → Save As → .pcap), then upload it here. Only analyse
@@ -104,7 +142,7 @@ export default function PcapUpload() {
       {file && (
         <SectionCard
           title={file.name}
-          description={`${file.size} · ${busy ? 'analysing…' : 'processed on the server'}`}
+          description={`${file.size} · ${busy ? 'analysing…' : aiBusy ? 'generating summary…' : 'processed on the server'}`}
           right={
             busy ? (
               <StatusPill tone="blue">
@@ -123,6 +161,20 @@ export default function PcapUpload() {
         >
           {error && <div className="px-5 py-4 text-sm text-red-700">{error}</div>}
         </SectionCard>
+      )}
+
+      {aiBusy && (
+        <SectionCard>
+          <div className="flex items-center gap-2 p-5 text-sm text-slate-500">
+            <Loader2 size={16} className="animate-spin" /> Analyzing traffic patterns…
+          </div>
+        </SectionCard>
+      )}
+
+      {aiResult && (
+        <AiPanel title="Summary">
+          <p className="whitespace-pre-wrap">{aiResult}</p>
+        </AiPanel>
       )}
 
       {result && (
