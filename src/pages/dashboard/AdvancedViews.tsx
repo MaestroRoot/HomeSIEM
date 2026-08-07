@@ -1,4 +1,4 @@
-﻿import { Fragment, useEffect, useMemo, useState } from 'react'
+﻿import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   Activity,
@@ -52,44 +52,129 @@ const verdictTone: Record<Verdict, 'red' | 'amber' | 'green' | 'slate'> = {
 
 const FRAMEWORKS = ['CIS', 'PCI DSS', 'GDPR', 'HIPAA'] as const
 
+type Framework = (typeof FRAMEWORKS)[number]
+
 interface Control {
   id: string
   title: string
   pass: boolean
   detail: string
+  category: string
 }
 
-function buildControls(vulns: VulnRecord[], stats: StatsOverview, devices: MonitoredDevice[]): Control[] {
+function buildCIS(vulns: VulnRecord[], stats: StatsOverview, devices: MonitoredDevice[], mfaEnabled: boolean): Control[] {
   const hasService = (s: string) => vulns.some((v) => (v.service ?? '').toLowerCase() === s.toLowerCase())
   const dbExposed = ['MSSQL', 'MySQL', 'PostgreSQL'].some(hasService)
   const riskyDevice = devices.some((d) => d.riskScore >= 70)
   return [
-    { id: 'no-telnet', title: 'No plaintext remote access (Telnet) exposed', pass: !hasService('Telnet'), detail: 'Telnet sends credentials in clear text.' },
-    { id: 'no-smb', title: 'SMB file sharing not exposed to the network', pass: !hasService('SMB') && !hasService('NetBIOS'), detail: 'Exposed SMB is a common ransomware entry point.' },
-    { id: 'no-rdp', title: 'Remote Desktop (RDP) not openly exposed', pass: !hasService('RDP'), detail: 'RDP should require NLA + MFA and be restricted.' },
-    { id: 'no-db', title: 'Databases not exposed to the network', pass: !dbExposed, detail: 'Databases must bind to localhost or be firewalled.' },
-    { id: 'devices-monitored', title: 'At least one device is monitored', pass: devices.length > 0, detail: 'A collector must be connected to have visibility.' },
-    { id: 'no-malicious', title: 'No contact with malicious indicators', pass: stats.byVerdict.malicious === 0, detail: 'No device reached a known-malicious indicator.' },
-    { id: 'low-risk', title: 'No device at high risk (score ≥ 70)', pass: !riskyDevice, detail: 'High-risk devices need investigation.' },
-    { id: 'few-suspicious', title: 'Suspicious activity under control', pass: stats.byVerdict.suspicious < 5, detail: 'A spike in suspicious lookups warrants review.' },
+    { id: 'cis-1', title: 'No plaintext remote access (Telnet) exposed', pass: !hasService('Telnet'), detail: 'Telnet sends credentials in clear text. Use SSH instead.', category: 'Access Control' },
+    { id: 'cis-2', title: 'SMB/NetBIOS file sharing not exposed to the network', pass: !hasService('SMB') && !hasService('NetBIOS'), detail: 'Exposed SMB is a common ransomware entry point.', category: 'Access Control' },
+    { id: 'cis-3', title: 'Remote Desktop (RDP) not openly exposed', pass: !hasService('RDP'), detail: 'RDP should require NLA + MFA and be restricted to known IPs.', category: 'Access Control' },
+    { id: 'cis-4', title: 'Databases not exposed to the network', pass: !dbExposed, detail: 'Databases must bind to localhost or be firewalled.', category: 'Access Control' },
+    { id: 'cis-5', title: 'At least one device is monitored', pass: devices.length > 0, detail: 'A collector must be connected to have visibility.', category: 'Monitoring' },
+    { id: 'cis-6', title: 'No contact with malicious indicators', pass: stats.byVerdict.malicious === 0, detail: 'No device reached a known-malicious indicator.', category: 'Threat Detection' },
+    { id: 'cis-7', title: 'No device at high risk (score >= 70)', pass: !riskyDevice, detail: 'High-risk devices need immediate investigation.', category: 'Risk Management' },
+    { id: 'cis-8', title: 'Suspicious activity under control (< 5)', pass: stats.byVerdict.suspicious < 5, detail: 'A spike in suspicious lookups warrants review.', category: 'Threat Detection' },
+    { id: 'cis-9', title: 'Multi-factor authentication enabled', pass: mfaEnabled, detail: 'MFA protects accounts even if passwords are compromised.', category: 'Access Control' },
+    { id: 'cis-10', title: 'Device inventory is maintained', pass: devices.length >= 2, detail: 'All devices should be registered and named.', category: 'Asset Management' },
   ]
 }
 
+function buildPCI(vulns: VulnRecord[], stats: StatsOverview, devices: MonitoredDevice[], mfaEnabled: boolean): Control[] {
+  const hasService = (s: string) => vulns.some((v) => (v.service ?? '').toLowerCase() === s.toLowerCase())
+  const httpExposed = hasService('HTTP') || hasService('HTTP-Proxy')
+  const ftpExposed = hasService('FTP')
+  const telnetExposed = hasService('Telnet')
+  return [
+    { id: 'pci-1', title: 'No plaintext protocols (Telnet, FTP, HTTP)', pass: !telnetExposed && !ftpExposed && !httpExposed, detail: 'Cardholder data must never traverse plaintext channels.', category: 'Network Security' },
+    { id: 'pci-2', title: 'Databases not externally accessible', pass: !['MSSQL', 'MySQL', 'PostgreSQL'].some(hasService), detail: 'Database servers must not be reachable from outside the cardholder data environment.', category: 'Network Security' },
+    { id: 'pci-3', title: 'All devices under active monitoring', pass: devices.filter((d) => d.status === 'active').length === devices.length && devices.length > 0, detail: 'Every device that handles cardholder data must be monitored.', category: 'Monitoring' },
+    { id: 'pci-4', title: 'No contact with known-malicious IPs/domains', pass: stats.byVerdict.malicious === 0, detail: 'Malicious contact could indicate a breach or compromised cardholder data.', category: 'Threat Detection' },
+    { id: 'pci-5', title: 'Firewall/router is registered and monitored', pass: devices.some((d) => d.deviceType === 'Router'), detail: 'Network perimeter devices must be identified and tracked.', category: 'Asset Management' },
+    { id: 'pci-6', title: 'No high-risk devices on the network', pass: !devices.some((d) => d.riskScore >= 70), detail: 'Compromised devices must not be part of the cardholder data environment.', category: 'Risk Management' },
+    { id: 'pci-7', title: 'Strong access controls (MFA enabled)', pass: mfaEnabled, detail: 'Multi-factor authentication is required for all administrative access.', category: 'Access Control' },
+    { id: 'pci-8', title: 'Suspicious activity is minimal', pass: stats.byVerdict.suspicious < 10, detail: 'Frequent suspicious activity suggests inadequate controls.', category: 'Monitoring' },
+    { id: 'pci-9', title: 'External services are limited', pass: stats.uniqueExternalIps < 500, detail: 'Reduce the attack surface by limiting external connections.', category: 'Network Security' },
+    { id: 'pci-10', title: 'Regular vulnerability scanning evidence', pass: vulns.length > 0, detail: 'Vulnerability scans must be performed regularly.', category: 'Vulnerability Management' },
+  ]
+}
+
+function buildGDPR(_vulns: VulnRecord[], stats: StatsOverview, devices: MonitoredDevice[], mfaEnabled: boolean): Control[] {
+  const riskyDevice = devices.some((d) => d.riskScore >= 70)
+  return [
+    { id: 'gdpr-1', title: 'Data processing activities are monitored', pass: devices.length > 0, detail: 'You must know what data is processed and where.', category: 'Accountability' },
+    { id: 'gdpr-2', title: 'Network devices are inventoried', pass: devices.filter((d) => d.ownerName).length > 0, detail: 'Devices handling personal data must have an identified owner.', category: 'Data Minimisation' },
+    { id: 'gdpr-3', title: 'No unauthorised data transfers detected', pass: stats.byVerdict.malicious === 0, detail: 'Unexpected external connections may indicate data exfiltration.', category: 'Integrity & Confidentiality' },
+    { id: 'gdpr-4', title: 'Access to systems is protected', pass: mfaEnabled, detail: 'Technical measures must protect personal data from unauthorised access.', category: 'Integrity & Confidentiality' },
+    { id: 'gdpr-5', title: 'No high-risk devices processing personal data', pass: !riskyDevice, detail: 'Devices processing personal data must not be compromised.', category: 'Integrity & Confidentiality' },
+    { id: 'gdpr-6', title: 'Suspicious activity is minimal', pass: stats.byVerdict.suspicious < 10, detail: 'Frequent anomalies suggest inadequate security controls.', category: 'Integrity & Confidentiality' },
+    { id: 'gdpr-7', title: 'Incident response capability exists', pass: true, detail: 'Alerts, timeline and forensics tools are available to respond to breaches.', category: 'Breach Notification' },
+    { id: 'gdpr-8', title: 'Data retention is bounded', pass: true, detail: 'Logs are automatically purged according to the retention policy.', category: 'Storage Limitation' },
+  ]
+}
+
+function buildHIPAA(vulns: VulnRecord[], stats: StatsOverview, devices: MonitoredDevice[], mfaEnabled: boolean): Control[] {
+  const hasService = (s: string) => vulns.some((v) => (v.service ?? '').toLowerCase() === s.toLowerCase())
+  return [
+    { id: 'hipaa-1', title: 'Access controls are enforced (MFA)', pass: mfaEnabled, detail: 'Unique user identification and MFA are required for ePHI access.', category: 'Access Control' },
+    { id: 'hipaa-2', title: 'Audit controls: activity is logged', pass: devices.length > 0, detail: 'Systems that access ePHI must record and review activity.', category: 'Audit Controls' },
+    { id: 'hipaa-3', title: 'Integrity: no contact with malicious indicators', pass: stats.byVerdict.malicious === 0, detail: 'Mechanisms must protect ePHI from improper alteration or destruction.', category: 'Integrity Controls' },
+    { id: 'hipaa-4', title: 'Transmission security: no plaintext protocols', pass: !hasService('Telnet') && !hasService('FTP'), detail: 'ePHI must be encrypted during transmission (TLS/SSH only).', category: 'Transmission Security' },
+    { id: 'hipaa-5', title: 'All devices with ePHI access are monitored', pass: devices.filter((d) => d.status === 'active').length > 0, detail: 'Every device in the environment must be under active monitoring.', category: 'Audit Controls' },
+    { id: 'hipaa-6', title: 'Risk assessment: no high-risk devices', pass: !devices.some((d) => d.riskScore >= 70), detail: 'Risk analysis must be performed regularly and documented.', category: 'Risk Management' },
+    { id: 'hipaa-7', title: 'Suspicious activity is investigated', pass: stats.byVerdict.suspicious < 5, detail: 'Anomalies must be reviewed to protect against impermissible uses or disclosures.', category: 'Information System Activity Review' },
+    { id: 'hipaa-8', title: 'File sharing services are not exposed', pass: !hasService('SMB') && !hasService('NetBIOS'), detail: 'Open file sharing could allow unauthorised access to ePHI.', category: 'Access Control' },
+    { id: 'hipaa-9', title: 'Databases are not externally accessible', pass: !['MSSQL', 'MySQL', 'PostgreSQL'].some(hasService), detail: 'ePHI databases must be behind access controls and firewalls.', category: 'Access Control' },
+    { id: 'hipaa-10', title: 'Device inventory with ownership is maintained', pass: devices.filter((d) => d.ownerName).length > 0, detail: 'All devices must be tracked with responsible personnel identified.', category: 'Device & Media Controls' },
+  ]
+}
+
+const BUILDERS: Record<Framework, (v: VulnRecord[], s: StatsOverview, d: MonitoredDevice[], mfa: boolean) => Control[]> = {
+  CIS: buildCIS,
+  'PCI DSS': buildPCI,
+  GDPR: buildGDPR,
+  HIPAA: buildHIPAA,
+}
+
+const FRAMEWORK_TAGLINES: Record<Framework, string> = {
+  CIS: 'Center for Internet Security Benchmarks — configuration best practices for home networks.',
+  'PCI DSS': 'Payment Card Industry Data Security Standard — protect cardholder data on your network.',
+  GDPR: 'General Data Protection Regulation — privacy and data protection for EU residents.',
+  HIPAA: 'Health Insurance Portability and Accountability Act — protect health information.',
+}
+
 export function Compliance() {
-  const [framework, setFramework] = useState<(typeof FRAMEWORKS)[number]>('CIS')
+  const [framework, setFramework] = useState<Framework>('CIS')
   const [controls, setControls] = useState<Control[]>([])
   const [loading, setLoading] = useState(true)
+  const rawData = useRef<{ vulns: VulnRecord[]; stats: StatsOverview; devices: MonitoredDevice[]; mfa: boolean } | null>(null)
+
+  const rebuild = (fw: Framework) => {
+    setFramework(fw)
+    if (rawData.current) {
+      const d = rawData.current
+      setControls(BUILDERS[fw](d.vulns, d.stats, d.devices, d.mfa))
+    }
+  }
 
   useEffect(() => {
     let active = true
     async function load() {
       try {
-        const [vulns, stats, devices] = await Promise.all([
+        const [vulns, stats, devsRes] = await Promise.all([
           api.get<VulnRecord[]>('/vulnerabilities'),
           api.get<StatsOverview>('/stats/overview'),
           api.get<{ items: MonitoredDevice[] }>('/devices'),
         ])
-        if (active) setControls(buildControls(vulns, stats, devices.items))
+        let mfaEnabled = false
+        try {
+          const session = await api.get<{ mfa_enabled?: boolean }>('/auth/session')
+          mfaEnabled = session.mfa_enabled ?? false
+        } catch { /* session endpoint may not expose this */ }
+        if (active) {
+          rawData.current = { vulns, stats, devices: devsRes.items, mfa: mfaEnabled }
+          setControls(buildCIS(vulns, stats, devsRes.items, mfaEnabled))
+        }
       } catch {
         /* keep */
       } finally {
@@ -106,38 +191,42 @@ export function Compliance() {
 
   const passing = controls.filter((c) => c.pass).length
   const pct = controls.length ? Math.round((passing / controls.length) * 100) : 0
+  const categories = [...new Set(controls.map((c) => c.category))]
 
   return (
     <div className="space-y-6">
       <PageHeader icon={ClipboardCheck} title="Compliance Center" subtitle="Security controls evaluated from your real posture and mapped to common frameworks." />
       <div className="flex flex-wrap gap-2">
         {FRAMEWORKS.map((f) => (
-          <button key={f} type="button" onClick={() => setFramework(f)} className={cx('rounded-lg px-3.5 py-1.5 text-sm font-semibold', framework === f ? 'bg-brand-600 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200')}>{f}</button>
+          <button key={f} type="button" onClick={() => rebuild(f)} className={cx('rounded-lg px-3.5 py-1.5 text-sm font-semibold', framework === f ? 'bg-brand-600 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200')}>{f}</button>
         ))}
       </div>
+      <p className="text-xs text-slate-500">{FRAMEWORK_TAGLINES[framework]}</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Controls" value={controls.length} sub={framework} icon={ClipboardCheck} />
         <StatCard label="Passing" value={passing} sub={`${pct}%`} icon={ShieldCheck} tone="green" />
         <StatCard label="Needs attention" value={controls.length - passing} sub="Failing controls" icon={ClipboardCheck} tone="red" />
         <StatCard label="Posture" value={`${pct}%`} sub="Overall compliance" icon={Activity} tone={pct >= 80 ? 'green' : pct >= 50 ? 'amber' : 'red'} />
       </div>
-      <SectionCard title={`${framework} controls`} description="Derived from your scans, events and devices">
-        {loading && controls.length === 0 ? (
-          <div className="grid place-items-center py-10 text-slate-400"><Loader2 size={20} className="animate-spin" /></div>
-        ) : (
-          <ul className="divide-y divide-slate-100">
-            {controls.map((c) => (
-              <li key={c.id} className="flex items-start gap-3 px-5 py-3.5">
-                <StatusPill tone={c.pass ? 'green' : 'red'}>{c.pass ? 'pass' : 'fail'}</StatusPill>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{c.title}</p>
-                  <p className="text-xs text-slate-500">{c.detail}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+      {loading && controls.length === 0 ? (
+        <SectionCard><div className="grid place-items-center py-10 text-slate-400"><Loader2 size={20} className="animate-spin" /></div></SectionCard>
+      ) : (
+        categories.map((cat) => (
+          <SectionCard key={cat} title={cat} description={`${controls.filter((c) => c.category === cat).length} controls`}>
+            <ul className="divide-y divide-slate-100">
+              {controls.filter((c) => c.category === cat).map((c) => (
+                <li key={c.id} className="flex items-start gap-3 px-5 py-3.5">
+                  <StatusPill tone={c.pass ? 'green' : 'red'}>{c.pass ? 'pass' : 'fail'}</StatusPill>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{c.title}</p>
+                    <p className="text-xs text-slate-500">{c.detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </SectionCard>
+        ))
+      )}
     </div>
   )
 }

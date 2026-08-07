@@ -28,7 +28,7 @@ import type {
   SubscriptionRead,
 } from '@/context/SubscriptionContext'
 import { ApiError, api } from '@/lib/api'
-import { PLAN_RANK, formatTzs } from '@/lib/plans'
+import { PLAN_RANK, PLAN_MODULES, formatTzs } from '@/lib/plans'
 import { modules } from '@/lib/modules'
 
 /* ---------- shapes the backend returns ---------- */
@@ -437,7 +437,12 @@ function PlanCard({
   const isDowngrade = PLAN_RANK[plan.plan] < PLAN_RANK[currentPlan]
   const [showAll, setShowAll] = useState(false)
 
-  const shown = showAll ? plan.modules : plan.modules.slice(0, 7)
+  const planOrder: Plan[] = ['Free', 'Home', 'Pro', 'Business']
+  const planIdx = planOrder.indexOf(plan.plan)
+  const prevPlanModules = planIdx > 0 ? PLAN_MODULES[planOrder[planIdx - 1]!] ?? [] : []
+  const newModules = plan.modules.filter((id) => !prevPlanModules.includes(id))
+
+  const shown = showAll ? newModules : newModules.slice(0, 7)
 
   return (
     <div
@@ -499,20 +504,30 @@ function PlanCard({
       </dl>
 
       <ul className="mt-3 flex-1 space-y-1.5">
+        {planIdx > 0 && (
+          <li className="pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            Everything in {planOrder[planIdx - 1]}, plus:
+          </li>
+        )}
+        {planIdx === 0 && (
+          <li className="pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            What you get for free:
+          </li>
+        )}
         {shown.map((id) => (
           <li key={id} className="flex gap-2 text-xs text-slate-600">
             <Check size={13} className="mt-0.5 shrink-0 text-emerald-500" />
             {moduleName(id)}
           </li>
         ))}
-        {plan.modules.length > 7 && (
+        {newModules.length > 7 && (
           <li>
             <button
               type="button"
               onClick={() => setShowAll((v) => !v)}
               className="text-xs font-semibold text-brand-600 hover:text-brand-800"
             >
-              {showAll ? 'Show fewer' : `+ ${plan.modules.length - 7} more`}
+              {showAll ? 'Show fewer' : `+ ${newModules.length - 7} more`}
             </button>
           </li>
         )}

@@ -65,7 +65,7 @@ export default function Devices() {
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const [form, setForm] = useState({ name: '', deviceType: 'Laptop', mac: '', lastIp: '', hostname: '' })
+  const [form, setForm] = useState({ name: '', deviceType: 'Laptop', mac: '', lastIp: '', hostname: '', ownerName: '' })
 
   // Live events feed
   const [events, setEvents] = useState<SecurityEventRow[]>([])
@@ -116,8 +116,9 @@ export default function Devices() {
         mac: form.mac.trim() || null,
         lastIp: form.lastIp.trim() || null,
         hostname: form.hostname.trim() || null,
+        ownerName: form.ownerName.trim() || null,
       })
-      setForm({ name: '', deviceType: 'Laptop', mac: '', lastIp: '', hostname: '' })
+      setForm({ name: '', deviceType: 'Laptop', mac: '', lastIp: '', hostname: '', ownerName: '' })
       setShowForm(false)
       await load()
     } catch (err) {
@@ -194,12 +195,16 @@ export default function Devices() {
               <input id="d-mac" className="input font-mono" placeholder="AA:BB:CC:DD:EE:FF" value={form.mac} onChange={(e) => setForm({ ...form, mac: e.target.value })} />
             </div>
             <div>
-              <label className="label" htmlFor="d-ip">IP address (optional)</label>
+              <label className="label" htmlFor="d-ip">IP address</label>
               <input id="d-ip" className="input font-mono" placeholder="192.168.1.50" value={form.lastIp} onChange={(e) => setForm({ ...form, lastIp: e.target.value })} />
             </div>
             <div>
-              <label className="label" htmlFor="d-host">Hostname (optional)</label>
+              <label className="label" htmlFor="d-host">Hostname</label>
               <input id="d-host" className="input font-mono" placeholder="hans-laptop" value={form.hostname} onChange={(e) => setForm({ ...form, hostname: e.target.value })} />
+            </div>
+            <div>
+              <label className="label" htmlFor="d-owner">Owner</label>
+              <input id="d-owner" className="input" placeholder="e.g. Samson" value={form.ownerName} onChange={(e) => setForm({ ...form, ownerName: e.target.value })} />
             </div>
             <div className="flex items-end">
               <button type="submit" className="btn-primary" disabled={saving}>
@@ -243,6 +248,7 @@ export default function Devices() {
             <thead>
               <tr>
                 <th>Device</th>
+                <th>Owner</th>
                 <th>MAC</th>
                 <th>IP</th>
                 <th>Status</th>
@@ -255,13 +261,13 @@ export default function Devices() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-slate-400">
+                  <td colSpan={9} className="px-5 py-10 text-center text-slate-400">
                     <Loader2 size={18} className="mx-auto animate-spin" />
                   </td>
                 </tr>
               ) : shown.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-sm text-slate-400">
+                  <td colSpan={9} className="px-5 py-10 text-center text-sm text-slate-400">
                     {tagFilter ? `No devices tagged “${tagFilter}”.` : 'No devices yet. Add one above, or connect a sensor and devices will appear as they are seen.'}
                   </td>
                 </tr>
@@ -279,11 +285,12 @@ export default function Devices() {
                             <Link to={`/dashboard/devices/${d.id}`} className="font-semibold text-slate-900 hover:text-brand-700">{d.name}</Link>
                             <p className="text-xs text-slate-500">
                               {d.deviceType}
-                              {d.discovered && <span className="ml-1 text-amber-600">· discovered</span>}
+                              {d.discovered && <span className="ml-1 text-amber-600">. discovered</span>}
                             </p>
                           </div>
                         </div>
                       </td>
+                      <td className="text-[13px] text-slate-600">{d.ownerName ?? <span className="text-slate-300">-</span>}</td>
                       <td className="font-mono text-[13px] text-slate-500">{d.mac ?? '—'}</td>
                       <td className="font-mono text-[13px]">{d.lastIp ?? '—'}</td>
                       <td>

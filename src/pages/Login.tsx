@@ -12,7 +12,6 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
-  const [remember, setRemember] = useState(true)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [googleBusy, setGoogleBusy] = useState(false)
@@ -92,7 +91,6 @@ export default function Login() {
       <AuthLayout
         title="Verify your identity"
         subtitle="A 6-digit code was sent to your email. Enter it below to complete sign in."
-        highlights={[]}
         footer={
           <button
             type="button"
@@ -151,12 +149,6 @@ export default function Login() {
     <AuthLayout
       title="Welcome back"
       subtitle="Sign in to your Home SOC and pick up where you left off."
-      highlights={[
-        'Live packet capture with verdicts',
-        'Correlated alerts across every device',
-        'Written investigations, not raw log lines',
-        'Threat intelligence refreshed automatically',
-      ]}
       footer={
         <>
           Don&apos;t have an account?{' '}
@@ -166,7 +158,7 @@ export default function Login() {
         </>
       }
     >
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <form onSubmit={onSubmit} className="space-y-3" noValidate>
         {error && (
           <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-700">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
@@ -229,16 +221,6 @@ export default function Login() {
             </button>
           </div>
         </div>
-
-        <label className="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-            className="h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
-          />
-          Keep me signed in on this device
-        </label>
 
         <button type="submit" className="btn-primary w-full py-3" disabled={busy || googleBusy}>
           {busy && <Loader2 size={16} className="animate-spin" />}

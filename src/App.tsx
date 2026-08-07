@@ -4,6 +4,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing'
 import AboutPage from './pages/About'
 import ServicesPage from './pages/Services'
+import PricingPage from './pages/Pricing'
 import HowItWorksPage from './pages/HowItWorks'
 import AudiencePage from './pages/Audience'
 import ContactPage from './pages/Contact'
@@ -39,6 +40,7 @@ import Vulnerabilities from './pages/dashboard/Vulnerabilities'
 import Forensics from './pages/dashboard/Forensics'
 import Investigation from './pages/dashboard/Investigation'
 import SecurityScore from './pages/dashboard/SecurityScore'
+import Ueba from './pages/dashboard/Ueba'
 import Account from './pages/dashboard/Account'
 import Subscriptions from './pages/dashboard/Subscriptions'
 import {
@@ -70,6 +72,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route path="/how-it-works" element={<HowItWorksPage />} />
         <Route path="/who-it-is-for" element={<AudiencePage />} />
         <Route path="/contact" element={<ContactPage />} />
@@ -111,6 +114,7 @@ export default function App() {
           <Route path="vulnerabilities" element={<Vulnerabilities />} />
           <Route path="forensics" element={<Forensics />} />
           <Route path="investigation" element={<Investigation />} />
+          <Route path="ueba" element={<Ueba />} />
           <Route path="score" element={<SecurityScore />} />
           <Route path="compliance" element={<Compliance />} />
           <Route path="coverage" element={<Coverage />} />

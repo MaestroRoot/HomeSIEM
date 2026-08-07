@@ -18,6 +18,7 @@ const categoryTone: Record<ModuleCategory, string> = {
   Detection: 'bg-cyan-50 text-cyan-700 ring-cyan-200',
   Response: 'bg-blue-50 text-blue-700 ring-blue-200',
   Posture: 'bg-slate-100 text-slate-600 ring-slate-200',
+  Advanced: 'bg-violet-50 text-violet-700 ring-violet-200',
 }
 
 export default function ServicesPage() {

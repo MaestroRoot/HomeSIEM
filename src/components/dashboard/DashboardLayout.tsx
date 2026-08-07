@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { Component, useEffect, useState } from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { Radio } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Radio } from 'lucide-react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import PlanGate from './PlanGate'
@@ -37,8 +38,46 @@ const routeTitles: Record<string, string> = {
   '/dashboard/forensics': 'Forensics',
   '/dashboard/investigation': 'Investigation',
   '/dashboard/score': 'Security Score',
+  '/dashboard/compliance': 'Compliance Center',
+  '/dashboard/runbooks': 'Runbooks',
+  '/dashboard/logs/parsers': 'Log Parsers',
+  '/dashboard/alerts/integrations': 'Alert Integrations',
+  '/dashboard/network-graph': 'Network Graph',
+  '/dashboard/attack-chain': 'Attack Chain',
+  '/dashboard/geo-map': 'Geo Threat Map',
+  '/dashboard/coverage': 'Detection Coverage',
   '/dashboard/account': 'Account',
   '/dashboard/subscriptions': 'Subscriptions',
+}
+
+class PageErrorBoundary extends Component<
+  { children: ReactNode; fallback?: ReactNode },
+  { error: Error | null }
+> {
+  state = { error: null as Error | null }
+  static getDerivedStateFromError(error: Error) { return { error } }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('[PageErrorBoundary]', error, info.componentStack) }
+  render() {
+    if (this.state.error) {
+      return (
+        this.props.fallback ?? (
+          <div className="grid place-items-center rounded-2xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-900/40 dark:bg-red-950/30">
+            <AlertTriangle size={28} className="mb-3 text-red-500" />
+            <p className="text-sm font-semibold text-red-700 dark:text-red-400">Something went wrong</p>
+            <p className="mt-1 text-xs text-red-500 dark:text-red-400/70">{this.state.error.message}</p>
+            <button
+              type="button"
+              onClick={() => { this.setState({ error: null }); window.location.reload() }}
+              className="btn-soft btn-sm mt-4"
+            >
+              <RefreshCw size={14} /> Reload page
+            </button>
+          </div>
+        )
+      )
+    }
+    return this.props.children
+  }
 }
 
 function TitleUpdater() {
@@ -130,9 +169,11 @@ function DashboardShell({
               </div>
             </div>
           )}
-          <PlanGate>
-            <Outlet />
-          </PlanGate>
+          <PageErrorBoundary>
+            <PlanGate>
+              <Outlet />
+            </PlanGate>
+          </PageErrorBoundary>
         </main>
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onHelp={() => { setPaletteOpen(false); setHelpOpen(true) }} />

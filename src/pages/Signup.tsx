@@ -89,12 +89,6 @@ export default function Signup() {
     <AuthLayout
       title="Create your Home SOC"
       subtitle="Free to start. Add your first device and be capturing traffic in minutes."
-      highlights={[
-        'Free plan, no card needed to start',
-        'Two devices and core alerting at no cost',
-        'Upgrade any time with M-Pesa, Airtel, Yas or a bank card',
-        'Packet and log analysis from the Home plan up',
-      ]}
       footer={
         <>
           Already have an account?{' '}

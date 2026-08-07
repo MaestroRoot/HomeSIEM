@@ -151,6 +151,7 @@ export interface MonitoredDevice {
   deviceType: string
   lastIp: string | null
   hostname: string | null
+  ownerName: string | null
   status: string
   discovered: boolean
   tags: string[]

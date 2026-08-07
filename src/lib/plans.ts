@@ -36,33 +36,40 @@ export const PLAN_RANK: Record<Plan, number> = {
   Business: 3,
 }
 
-const FREE_MODULES = ['account', 'overview', 'agents', 'devices', 'logs', 'alerts', 'score']
+const FREE_MODULES = ['overview', 'devices', 'search', 'alerts', 'score', 'ueba', 'compliance', 'account']
 const HOME_MODULES = [
   ...FREE_MODULES,
-  'capture',
+  'agents',
+  'logs',
   'detection',
   'ioc',
   'timeline',
-  'search',
   'visualization',
-  'ai-logs',
+  'alert-integrations',
 ]
 const PRO_MODULES = [
   ...HOME_MODULES,
   'pcap',
+  'ai-logs',
   'ai-packets',
   'assistant',
   'incidents',
   'rules',
   'intel',
   'reports',
+  'ai-rules',
+  'network-graph',
+  'attack-chain',
+  'geo-map',
+  'coverage',
+  'runbooks',
+  'log-parsers',
 ]
 const BUSINESS_MODULES = [
   ...PRO_MODULES,
-  'ai-rules',
-  'inventory',
-  'vulnerabilities',
   'forensics',
+  'vulnerabilities',
+  'inventory',
   'investigation',
 ]
 

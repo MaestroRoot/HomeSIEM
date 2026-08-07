@@ -4,13 +4,16 @@ import {
   BarChart3,
   Bot,
   Boxes,
+  ClipboardCheck,
   Clock,
   Cpu,
   CreditCard,
+  FileCode2,
   FileSearch,
   FileText,
   FileUp,
   Fingerprint,
+  Globe2,
   Gauge,
   KeyRound,
   LayoutDashboard,
@@ -18,12 +21,15 @@ import {
   Microscope,
   Network,
   Radar,
+  Route as RouteIcon,
   ScrollText,
   Search,
   ShieldAlert,
   ShieldCheck,
   Siren,
   Sparkles,
+  UserCheck,
+  Workflow,
   Wrench,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -35,6 +41,7 @@ export type ModuleCategory =
   | 'Detection'
   | 'Response'
   | 'Posture'
+  | 'Advanced'
 
 export interface AppModule {
   id: string
@@ -252,6 +259,19 @@ export const modules: AppModule[] = [
     bullets: ['Visual IF/THEN rule builder', 'Thresholds and time windows', 'Enable/disable per rule'],
   },
   {
+    id: 'ueba',
+    no: 19,
+    name: 'User Behavior',
+    path: '/dashboard/ueba',
+    icon: UserCheck,
+    category: 'Detection',
+    tagline: 'Who is doing what, and when is it weird',
+    description:
+      'Track each user\'s normal behavior — login times, visited domains, running processes — and get alerted when something deviates. Detect compromised accounts, insider threats and unusual activity.',
+    bullets: ['Per-user behavior baselines', 'Anomaly detection and risk scoring', 'Activity timeline per user'],
+    featured: true,
+  },
+  {
     id: 'ai-rules',
     no: 19,
     name: 'Custom Rules',
@@ -338,6 +358,102 @@ export const modules: AppModule[] = [
     featured: true,
   },
   {
+    id: 'compliance',
+    no: 21,
+    name: 'Compliance Center',
+    path: '/dashboard/compliance',
+    icon: ClipboardCheck,
+    category: 'Posture',
+    tagline: 'Framework-specific security controls',
+    description:
+      'Evaluate your real security posture against CIS, PCI DSS, GDPR and HIPAA frameworks. Each control is checked against your actual devices, events and configuration.',
+    bullets: ['CIS, PCI DSS, GDPR, HIPAA controls', 'Pass/fail per control', 'Overall compliance posture score'],
+  },
+  {
+    id: 'runbooks',
+    no: 30,
+    name: 'Runbooks',
+    path: '/dashboard/runbooks',
+    icon: Workflow,
+    category: 'Advanced',
+    tagline: 'Step-by-step response playbooks',
+    description:
+      'Pre-built incident response playbooks for phishing, malware, credential compromise and unauthorised access. Follow the steps to contain and resolve each scenario.',
+    bullets: ['Phishing response steps', 'Malware containment', 'Credential compromise playbook'],
+  },
+  {
+    id: 'log-parsers',
+    no: 31,
+    name: 'Log Parsers',
+    path: '/dashboard/logs/parsers',
+    icon: FileCode2,
+    category: 'Advanced',
+    tagline: 'Regex pattern tester for log lines',
+    description:
+      'Test and refine regular expressions against sample log lines before using them in your collection pipeline. Supports named capture groups.',
+    bullets: ['Live regex tester', 'Named groups', 'Sample log input'],
+  },
+  {
+    id: 'alert-integrations',
+    no: 32,
+    name: 'Alert Integrations',
+    path: '/dashboard/alerts/integrations',
+    icon: Workflow,
+    category: 'Advanced',
+    tagline: 'Forward alerts to Slack, email and more',
+    description:
+      'Connect flagged alerts to Slack, Discord, email, PagerDuty or a generic webhook. The server delivers automatically when a flagged event fires.',
+    bullets: ['Slack, Discord, email, PagerDuty', 'Generic webhook support', 'Per-destination severity filter'],
+  },
+  {
+    id: 'network-graph',
+    no: 33,
+    name: 'Network Graph',
+    path: '/dashboard/network-graph',
+    icon: Network,
+    category: 'Advanced',
+    tagline: 'Visual communication topology',
+    description:
+      'See who talked to what. A visual graph of device-to-destination connections with flagged paths highlighted in red.',
+    bullets: ['Device-to-destination map', 'Flagged paths in red', 'Top 40 connections'],
+  },
+  {
+    id: 'attack-chain',
+    no: 34,
+    name: 'Attack Chain',
+    path: '/dashboard/attack-chain',
+    icon: RouteIcon,
+    category: 'Advanced',
+    tagline: 'Flagged events in attack sequence',
+    description:
+      'Flagged events plotted chronologically and mapped to stages of an attack. See the progression from initial contact to exfiltration.',
+    bullets: ['Chronological event chain', 'Attack stage mapping', 'Severity timeline'],
+  },
+  {
+    id: 'geo-map',
+    no: 35,
+    name: 'Geo Threat Map',
+    path: '/dashboard/geo-map',
+    icon: Globe2,
+    category: 'Advanced',
+    tagline: 'Where external destinations are located',
+    description:
+      'Geographic context for the external IPs your devices contacted. Ranked by country with event counts. Context, not attribution.',
+    bullets: ['Country ranking', 'External IP count', 'Event breakdown by country'],
+  },
+  {
+    id: 'coverage',
+    no: 36,
+    name: 'Detection Coverage',
+    path: '/dashboard/coverage',
+    icon: ShieldCheck,
+    category: 'Advanced',
+    tagline: 'MITRE ATT&CK tactic coverage',
+    description:
+      'Which MITRE ATT&CK tactics your active detection rules cover, and where the gaps are. Close gaps by adding rules in the Rule Engine.',
+    bullets: ['Tactic coverage heatmap', 'Gap identification', 'Rule-to-tactic mapping'],
+  },
+  {
     id: 'subscriptions',
     no: 26,
     name: 'Subscriptions',
@@ -376,6 +492,7 @@ export const moduleCategories: ModuleCategory[] = [
   'Detection',
   'Response',
   'Posture',
+  'Advanced',
 ]
 
 /** Sidebar order: grouped by category, numbered by the spec. */

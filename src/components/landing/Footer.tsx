@@ -97,6 +97,7 @@ export default function Footer({ showCta = true }: { showCta?: boolean }) {
                 { l: 'Home', h: '/' },
                 { l: 'About', h: '/about' },
                 { l: 'Services', h: '/services' },
+                { l: 'Pricing', h: '/pricing' },
                 { l: 'How it works', h: '/how-it-works' },
                 { l: 'Who it is for', h: '/who-it-is-for' },
                 { l: 'Contact', h: '/contact' },

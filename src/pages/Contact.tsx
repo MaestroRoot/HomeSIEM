@@ -194,6 +194,27 @@ export default function ContactPage() {
             </div>
           </div>
         </section>
+
+        {/* FAQ */}
+        <section className="bg-slate-50 py-16">
+          <div className="container-x">
+            <h2 className="section-title text-center text-3xl">Frequently asked questions</h2>
+            <div className="mx-auto mt-10 max-w-2xl space-y-6">
+              {[
+                { q: 'Can I switch plans later?', a: 'Yes. Upgrade or downgrade from the Subscriptions page inside the dashboard. Changes take effect immediately and billing is prorated.' },
+                { q: 'What happens when my trial ends?', a: 'You drop to the Free plan automatically. No payment is taken. Your data stays and you can upgrade any time.' },
+                { q: 'How do I pay?', a: 'Mobile money via Yas Mix, Airtel Money or HaloPesa. Bank card support is coming soon. All payments are processed securely, we never store your card number.' },
+                { q: 'What is a device?', a: 'Any phone, laptop, desktop, router, server or IoT gadget that the sensor monitors. Each device is identified by its MAC address.' },
+                { q: 'Is there a limit on data?', a: 'No. We do not charge per event or per GB. All plans include unlimited log and event ingestion, the limits are on device count, retention and seat count.' },
+              ].map((item) => (
+                <div key={item.q} className="rounded-xl border border-slate-200 bg-white p-5">
+                  <h3 className="text-sm font-bold text-slate-900">{item.q}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
       <Footer showCta={false} />
     </div>
