@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Activity, AlertTriangle, Bot, Clock, Cpu, FileText, Fingerprint, Globe2, Laptop, LayoutDashboard, Loader2, Pin, PinOff, Radio, ShieldAlert, ShieldCheck, Siren } from 'lucide-react'
+import { Activity, AlertTriangle, Bot, Clock, Cpu, FileText, Fingerprint, Globe2, Laptop, LayoutDashboard, Loader2, Pin, PinOff, Radio, ShieldAlert, ShieldCheck, Siren, Trash2 } from 'lucide-react'
 import {
   Area,
   AreaChart,
@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, ConfirmModal, cx } from '@/components/ui'
 import { api } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { SecurityEventRow, StatsOverview, Verdict } from '@/lib/types'
@@ -40,6 +40,9 @@ export default function Overview() {
   const [stats, setStats] = useState<StatsOverview | null>(null)
   const [events, setEvents] = useState<SecurityEventRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [wipeOpen, setWipeOpen] = useState(false)
+  const [wiping, setWiping] = useState(false)
+  const [wipeError, setWipeError] = useState<string | null>(null)
   const [pinned, setPinned] = useState<string[]>(() => {
     try {
       const raw = localStorage.getItem(PIN_KEY)
@@ -61,30 +64,43 @@ export default function Overview() {
     })
   }
 
-  useEffect(() => {
-    let active = true
-    async function load() {
-      try {
-        const [s, e] = await Promise.all([
-          api.get<StatsOverview>('/stats/overview'),
-          api.get<{ items: SecurityEventRow[] }>('/events?limit=12'),
-        ])
-        if (!active) return
-        setStats(s)
-        setEvents(e.items)
-      } catch {
-        /* keep last state */
-      } finally {
-        if (active) setLoading(false)
-      }
-    }
-    load()
-    const stop = pollWhenVisible(load, 20000)
-    return () => {
-      active = false
-      stop()
+  const load = useCallback(async () => {
+    try {
+      const [s, e] = await Promise.all([
+        api.get<StatsOverview>('/stats/overview'),
+        api.get<{ items: SecurityEventRow[] }>('/events?limit=12'),
+      ])
+      setStats(s)
+      setEvents(e.items)
+    } catch {
+      /* keep last state */
+    } finally {
+      setLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    load()
+    const stop = pollWhenVisible(load, 20000)
+    return () => stop()
+  }, [load])
+
+  async function handleWipe() {
+    setWiping(true)
+    setWipeError(null)
+    try {
+      await api.del('/organization/data')
+      setWipeOpen(false)
+      setStats(null)
+      setEvents([])
+      setLoading(true)
+      load()
+    } catch (error) {
+      setWipeError(error instanceof Error ? error.message : 'Something went wrong.')
+    } finally {
+      setWiping(false)
+    }
+  }
 
   const verdictPie = stats
     ? (['malicious', 'suspicious', 'clean', 'unknown'] as const)
@@ -120,9 +136,17 @@ export default function Overview() {
         title="Dashboard"
         subtitle="Live view of what your collectors are seeing, enriched with GeoIP and threat intelligence."
         actions={
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { to: '/dashboard/agents', label: 'Run a scan', icon: Cpu },
+          <>
+            <button
+              type="button"
+              onClick={() => setWipeOpen(true)}
+              className="btn-danger btn-sm whitespace-nowrap"
+            >
+              <Trash2 size={14} /> Delete all
+            </button>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { to: '/dashboard/agents', label: 'Run a scan', icon: Cpu },
               { to: '/dashboard/score', label: 'Score', icon: ShieldCheck },
               { to: '/dashboard/reports', label: 'Report', icon: FileText },
               { to: '/dashboard/ioc', label: 'Check IOC', icon: Fingerprint },
@@ -135,7 +159,8 @@ export default function Overview() {
                 <a.icon size={14} /> {a.label}
               </Link>
             ))}
-          </div>
+            </div>
+          </>
         }
       />
 
@@ -304,6 +329,30 @@ export default function Overview() {
           </SectionCard>
         </>
       )}
+
+      <ConfirmModal
+        open={wipeOpen}
+        title="Delete all SIEM data"
+        confirmLabel="Delete everything"
+        requireType="DELETE"
+        busy={wiping}
+        onConfirm={handleWipe}
+        onClose={() => setWipeOpen(false)}
+        message={
+          <>
+            <p>
+              This will permanently delete <strong>all</strong> data of this workspace: events,
+              devices, agents, scans, findings, detection rules, reports and settings.
+            </p>
+            <p>
+              Your account and workspace stay, but every sensor must be re-registered before it can
+              send data again.
+            </p>
+            <p className="font-semibold text-red-600">This action cannot be undone.</p>
+            {wipeError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{wipeError}</p>}
+          </>
+        }
+      />
     </div>
   )
 }

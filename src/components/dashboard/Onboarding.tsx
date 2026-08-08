@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  ArrowLeft,
   ArrowRight,
   Check,
   ChevronRight,
@@ -60,16 +61,10 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
     if (token) return
     setTokenLoading(true)
     try {
-      const res = await api.get<{ items: { token: string }[] }>('/agents')
-      if (res.items.length > 0) {
-        setToken(res.items[0]!.token)
-      } else {
-        // Create a new agent to get a token
-        const agent = await api.post<{ token: string }>('/agents', { hostname: 'my-device' })
-        setToken(agent.token)
-      }
+      const res = await api.post<{ token: string }>('/sensors/tokens', { label: 'my-device' })
+      setToken(res.token)
     } catch {
-      // fallback: user can go to agents page manually
+      // fallback: user can go to the Sensors page manually
     } finally {
       setTokenLoading(false)
     }
@@ -112,11 +107,15 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
     }
   }, [ndConfig?.configured, ndConfig?.profileId, ndConfig?.organizationId])
 
-  function nextStep() {
-    const next = step + 1
+  function goNext() {
+    const next = Math.min(3, step + 1)
     setStep(next)
     if (next === 1) fetchToken()
     if (next === 2) fetchNdConfig()
+  }
+
+  function goBack() {
+    setStep((v) => Math.max(0, v - 1))
   }
 
   return (
@@ -127,7 +126,7 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
           <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-600">
             <Radio size={13} /> Getting started
           </span>
-          <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" aria-label="Skip">
+          <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100" aria-label="Close">
             <X size={18} />
           </button>
         </div>
@@ -144,7 +143,7 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
               <p className="mt-2 text-sm leading-relaxed text-slate-600">
                 Your home Security Operations Center. It watches what your devices connect to, checks it against threat intelligence, and flags anything suspicious.
               </p>
-              <p className="mt-3 text-xs text-slate-400">Takes about 2 minutes. You can skip and do this later.</p>
+              <p className="mt-3 text-xs text-slate-400">Takes about 2 minutes.</p>
             </div>
           )}
 
@@ -177,7 +176,7 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
                   <div className="mt-3 rounded-lg bg-slate-900 p-3">
                     <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Run this on your device</p>
                     <code className="block font-mono text-[12px] text-green-400">
-                      pip install homesiem &amp;&amp; homesiem start --token {token.slice(0, 8)}…
+                      pip install homesiem &amp;&amp; homesiem start --token {token}
                     </code>
                   </div>
                 )}
@@ -308,34 +307,33 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
           )}
         </div>
 
-        {/* Progress dots */}
-        <div className="flex items-center justify-center gap-1.5 pb-2">
-          {[0, 1, 2, 3].map((i) => (
-            <span key={i} className={i === step ? 'h-1.5 w-5 rounded-full bg-brand-600' : 'h-1.5 w-1.5 rounded-full bg-slate-300'} />
-          ))}
-        </div>
-
-        {/* Footer */}
+        {/* Footer: prev / dots / next */}
         <div className="flex items-center justify-between gap-2 border-t border-slate-100 px-5 py-3">
-          <button type="button" onClick={onClose} className="text-sm font-semibold text-slate-500 hover:text-slate-700">
-            Skip
+          <button
+            type="button"
+            onClick={goBack}
+            disabled={step === 0}
+            aria-label="Previous step"
+            className="btn-ghost btn-sm grid h-9 w-9 place-items-center !p-0 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ArrowLeft size={16} />
           </button>
-          <div className="flex gap-2">
-            {step > 0 && (
-              <button type="button" onClick={() => setStep((v) => v - 1)} className="btn-ghost btn-sm">
-                Back
-              </button>
-            )}
-            {last ? (
-              <button type="button" onClick={onClose} className="btn-primary btn-sm">
-                Go to Dashboard <ArrowRight size={14} />
-              </button>
-            ) : (
-              <button type="button" onClick={nextStep} className="btn-primary btn-sm">
-                {step === 2 && ndConfig?.configured ? 'Finish' : 'Next'} <ArrowRight size={14} />
-              </button>
-            )}
+
+          <div className="flex items-center gap-1.5">
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className={i === step ? 'h-1.5 w-5 rounded-full bg-brand-600' : 'h-1.5 w-1.5 rounded-full bg-slate-300'} />
+            ))}
           </div>
+
+          <button
+            type="button"
+            onClick={goNext}
+            disabled={last}
+            aria-label="Next step"
+            className="btn-primary btn-sm grid h-9 w-9 place-items-center !p-0 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ArrowRight size={16} />
+          </button>
         </div>
       </div>
     </div>

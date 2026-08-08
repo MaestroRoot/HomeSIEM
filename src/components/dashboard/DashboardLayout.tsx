@@ -80,6 +80,16 @@ class PageErrorBoundary extends Component<
   }
 }
 
+class WizardBoundary extends Component<{ children: ReactNode }, { error: boolean }> {
+  state = { error: false }
+  static getDerivedStateFromError() { return { error: true } }
+  componentDidCatch(error: Error) { console.error('[WizardBoundary]', error) }
+  render() {
+    if (this.state.error) return null
+    return this.props.children
+  }
+}
+
 function TitleUpdater() {
   const { pathname } = useLocation()
   useEffect(() => {
@@ -178,7 +188,9 @@ function DashboardShell({
       </div>
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onHelp={() => { setPaletteOpen(false); setHelpOpen(true) }} />
       <KeyboardHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
-      <Onboarding open={onboard} onClose={() => { localStorage.setItem('homesiem-onboarded', '1'); setOnboard(false) }} />
+      <WizardBoundary>
+        <Onboarding open={onboard} onClose={() => { localStorage.setItem('homesiem-onboarded', '1'); setOnboard(false) }} />
+      </WizardBoundary>
     </div>
   )
 }

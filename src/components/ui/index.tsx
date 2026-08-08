@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import type { Severity } from '@/lib/types'
@@ -222,4 +223,75 @@ export function TableWrap({ children }: { children: ReactNode }) {
 
 export function Mono({ children }: { children: ReactNode }) {
   return <span className="font-mono text-[13px] text-slate-700">{children}</span>
+}
+
+export function ConfirmModal({
+  open,
+  title,
+  message,
+  confirmLabel = 'Delete',
+  requireType,
+  busy = false,
+  onConfirm,
+  onClose,
+}: {
+  open: boolean
+  title: string
+  message: ReactNode
+  confirmLabel?: string
+  /** Ikiwa imewekwa, mtumiaji anatakiwa kuandika neno hili kabla ya kuthibitisha. */
+  requireType?: string
+  busy?: boolean
+  onConfirm: () => void
+  onClose: () => void
+}) {
+  const [typed, setTyped] = useState('')
+  const matched = !requireType || typed === requireType
+
+  useEffect(() => {
+    if (!open) setTyped('')
+  }, [open])
+
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-slate-900/50 p-4"
+      onClick={busy ? undefined : onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="card w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-base font-bold text-slate-900">{title}</h3>
+        <div className="mt-2 space-y-2 text-sm leading-relaxed text-slate-600">{message}</div>
+        {requireType && (
+          <div className="mt-4">
+            <label className="label" htmlFor="confirm-type">
+              Type{' '}
+              <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs font-semibold text-red-600">
+                {requireType}
+              </code>{' '}
+              to confirm
+            </label>
+            <input
+              id="confirm-type"
+              className="input"
+              value={typed}
+              autoFocus
+              disabled={busy}
+              onChange={(e) => setTyped(e.target.value)}
+            />
+          </div>
+        )}
+        <div className="mt-6 flex justify-end gap-2">
+          <button type="button" className="btn-ghost" onClick={onClose} disabled={busy}>
+            Cancel
+          </button>
+          <button type="button" className="btn-danger" onClick={onConfirm} disabled={!matched || busy}>
+            {busy ? 'Deleting…' : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
