@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Check, Copy, Cpu, Download, KeyRound, Loader2, Monitor, Radio, ShieldCheck, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
-import CloudflareGatewayCard from '@/components/dashboard/CloudflareGatewayCard'
+import NextDnsCard from '@/components/dashboard/NextDnsCard'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentRecord, SensorTokenCreated } from '@/lib/types'
@@ -171,11 +171,11 @@ export default function Agents() {
         </div>
       </SectionCard>
 
-      {/* Step 3: Cloudflare Gateway integration (per-org, set up in the app) */}
-      <CloudflareGatewayCard />
+      {/* Step 3: NextDNS integration (per-org, set up in the app) */}
+      <NextDnsCard />
 
       {/* Step 4: DNS resolver (advanced / self-hosted) */}
-      <SectionCard title="4. Self-hosted DNS resolver (advanced, optional)" description="Alternative to NextDNS: run your own resolver on a host and point devices' DNS at it.">
+      <SectionCard title="4. Self-hosted DNS resolver (advanced, optional)" description="Alternative to the managed DNS network above: run your own resolver on a host and point devices' DNS at it.">
         <div className="space-y-3 p-5">
           <CopyBlock text={resolverCmd} />
           <p className="text-xs text-slate-500">Then set the host's IP as the DNS server on the devices you want to monitor. Only works on your own LAN.</p>

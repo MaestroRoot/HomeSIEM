@@ -13,14 +13,9 @@ import {
 } from 'lucide-react'
 import QRCode from 'qrcode'
 import { api, ApiError } from '@/lib/api'
-import type { CloudflareGatewayConfig } from '@/lib/types'
+import type { NextDnsConfig } from '@/lib/types'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1').replace(/\/$/, '')
-
-function appleProfileUrl(orgId: string): string {
-  const base = API_BASE.startsWith('http') ? API_BASE : `${window.location.origin}${API_BASE}`
-  return `${base}/cloudflare-gateway/apple/${orgId}`
-}
 
 function CopyRow({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -46,17 +41,18 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
   const [token, setToken] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(false)
 
-  // Step 2 state: cloudflare
-  const [cfConfig, setCfConfig] = useState<CloudflareGatewayConfig | null>(null)
-  const [cfProvisioning, setCfProvisioning] = useState(false)
-  const [cfError, setCfError] = useState<string | null>(null)
-  const [qr, setQr] = useState<string | null>(null)
+  // Step 2 state: nextdns
+  const [ndConfig, setNdConfig] = useState<NextDnsConfig | null>(null)
+  const [ndProvisioning, setNdProvisioning] = useState(false)
+  const [ndError, setNdError] = useState<string | null>(null)
+  const [iosQr, setIosQr] = useState<string | null>(null)
+  const [androidQr, setAndroidQr] = useState<string | null>(null)
 
   if (!open) return null
 
   // Step 0: Welcome
   // Step 1: Install sensor (token)
-  // Step 2: Phone DNS (Cloudflare)
+  // Step 2: Phone DNS (NextDNS)
   // Step 3: All done
   const last = step === 3
 
@@ -79,41 +75,48 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
     }
   }
 
-  async function fetchCfConfig() {
+  async function fetchNdConfig() {
     try {
-      setCfConfig(await api.get<CloudflareGatewayConfig>('/cloudflare-gateway'))
+      setNdConfig(await api.get<NextDnsConfig>('/nextdns'))
     } catch {
       /* keep */
     }
   }
 
-  async function provisionCf() {
-    setCfProvisioning(true)
-    setCfError(null)
+  async function provisionNd() {
+    setNdProvisioning(true)
+    setNdError(null)
     try {
-      const c = await api.post<CloudflareGatewayConfig>('/cloudflare-gateway/provision', {})
-      setCfConfig(c)
+      const c = await api.post<NextDnsConfig>('/nextdns/provision', {})
+      setNdConfig(c)
     } catch (err) {
-      setCfError(err instanceof ApiError ? err.message : 'Could not set up DNS monitoring.')
+      setNdError(err instanceof ApiError ? err.message : 'Could not create the DNS network configuration.')
     } finally {
-      setCfProvisioning(false)
+      setNdProvisioning(false)
     }
   }
 
-  // Generate QR when config changes
+  // Generate QRs when config changes
   useEffect(() => {
-    if (cfConfig?.configured && cfConfig.dohHostname && cfConfig.organizationId) {
-      QRCode.toDataURL(appleProfileUrl(cfConfig.organizationId), { margin: 1, width: 180 })
-        .then(setQr)
-        .catch(() => setQr(null))
+    if (ndConfig?.configured && ndConfig.profileId) {
+      const base = API_BASE.startsWith('http') ? API_BASE : `${window.location.origin}${API_BASE}`
+      QRCode.toDataURL(ndConfig.organizationId ? `${base}/nextdns/apple/${ndConfig.organizationId}` : '', { margin: 1, width: 180 })
+        .then(setIosQr)
+        .catch(() => setIosQr(null))
+      QRCode.toDataURL(`https://link.nextdns.io/${ndConfig.profileId}`, { margin: 1, width: 180 })
+        .then(setAndroidQr)
+        .catch(() => setAndroidQr(null))
+    } else {
+      setIosQr(null)
+      setAndroidQr(null)
     }
-  }, [cfConfig?.configured, cfConfig?.dohHostname, cfConfig?.organizationId])
+  }, [ndConfig?.configured, ndConfig?.profileId, ndConfig?.organizationId])
 
   function nextStep() {
     const next = step + 1
     setStep(next)
     if (next === 1) fetchToken()
-    if (next === 2) fetchCfConfig()
+    if (next === 2) fetchNdConfig()
   }
 
   return (
@@ -200,11 +203,11 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
               </div>
 
               <div className="mt-5 space-y-3">
-                {!cfConfig && !cfError ? (
+                {!ndConfig && !ndError ? (
                   <div className="grid place-items-center py-6 text-slate-400">
                     <Loader2 size={18} className="animate-spin" />
                   </div>
-                ) : cfConfig?.configured && cfConfig.dohHostname ? (
+                ) : ndConfig?.configured && ndConfig.dohHostname ? (
                   <>
                     <div className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -217,8 +220,8 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
                         <p className="mb-2 text-xs font-semibold text-slate-700">
                           <Smartphone size={12} className="mr-1 inline text-brand-600" /> iPhone
                         </p>
-                        {qr ? (
-                          <img src={qr} alt="QR" className="mx-auto h-32 w-32 rounded-lg" />
+                        {iosQr ? (
+                          <img src={iosQr} alt="QR" className="mx-auto h-32 w-32 rounded-lg" />
                         ) : (
                           <div className="mx-auto grid h-32 w-32 place-items-center text-slate-300">
                             <Loader2 size={16} className="animate-spin" />
@@ -232,8 +235,14 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
                         <p className="mb-2 text-xs font-semibold text-slate-700">
                           <Smartphone size={12} className="mr-1 inline text-brand-600" /> Android
                         </p>
-                        <CopyRow text={cfConfig.dohHostname} />
-                        <p className="mt-1.5 text-[10px] text-slate-500">Settings → Network → Private DNS → paste</p>
+                        {androidQr ? (
+                          <img src={androidQr} alt="QR" className="mx-auto h-32 w-32 rounded-lg" />
+                        ) : (
+                          <div className="mx-auto grid h-32 w-32 place-items-center text-slate-300">
+                            <Loader2 size={16} className="animate-spin" />
+                          </div>
+                        )}
+                        <p className="mt-1.5 text-[10px] text-slate-500">Camera → scan → set up Private DNS</p>
                       </div>
                     </div>
                   </>
@@ -241,24 +250,25 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
                   <>
                     <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
                       <p className="text-sm text-slate-700">
-                        <strong>One-click setup.</strong> We create a private DNS location for your account. Free: 1M queries/month, 7-day logs.
+                        <strong>One-click setup.</strong> We create a private DNS network for your devices with threat filtering
+                        and query logs that show up here as security events.
                       </p>
                     </div>
 
-                    {cfError && <p className="text-sm text-red-700">{cfError}</p>}
+                    {ndError && <p className="text-sm text-red-700">{ndError}</p>}
 
                     <button
                       type="button"
                       className="btn-primary btn-sm w-full"
-                      onClick={provisionCf}
-                      disabled={cfProvisioning}
+                      onClick={provisionNd}
+                      disabled={ndProvisioning}
                     >
-                      {cfProvisioning ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
-                      {cfProvisioning ? 'Setting up…' : 'Enable phone monitoring'}
+                      {ndProvisioning ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
+                      {ndProvisioning ? 'Creating…' : 'Get DNS Network Configuration'}
                     </button>
 
                     <p className="text-[11px] text-slate-400">
-                      No Cloudflare account needed. Works on WiFi and mobile data.
+                      No NextDNS account needed. Works on WiFi and mobile data.
                     </p>
                   </>
                 )}
@@ -322,7 +332,7 @@ export default function Onboarding({ open, onClose }: { open: boolean; onClose: 
               </button>
             ) : (
               <button type="button" onClick={nextStep} className="btn-primary btn-sm">
-                {step === 2 && cfConfig?.configured ? 'Finish' : 'Next'} <ArrowRight size={14} />
+                {step === 2 && ndConfig?.configured ? 'Finish' : 'Next'} <ArrowRight size={14} />
               </button>
             )}
           </div>

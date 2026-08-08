@@ -3,13 +3,17 @@ import QRCode from 'qrcode'
 import { Check, Copy, Globe, Loader2, Smartphone, Trash2, Wifi } from 'lucide-react'
 import { SectionCard, StatusPill } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
-import type { CloudflareGatewayConfig } from '@/lib/types'
+import type { NextDnsConfig } from '@/lib/types'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1').replace(/\/$/, '')
 
 function appleProfileUrl(orgId: string): string {
   const base = API_BASE.startsWith('http') ? API_BASE : `${window.location.origin}${API_BASE}`
-  return `${base}/cloudflare-gateway/apple/${orgId}`
+  return `${base}/nextdns/apple/${orgId}`
+}
+
+function androidLink(profileId: string): string {
+  return `https://link.nextdns.io/${profileId}`
 }
 
 function CopyRow({ text }: { text: string }) {
@@ -29,26 +33,37 @@ function CopyRow({ text }: { text: string }) {
   )
 }
 
-export default function CloudflareGatewayCard() {
-  const [config, setConfig] = useState<CloudflareGatewayConfig | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [provisioning, setProvisioning] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+function QrBox({ value, width = 160 }: { value: string | null; width?: number }) {
   const [qr, setQr] = useState<string | null>(null)
-
   useEffect(() => {
-    if (config?.configured && config.dohHostname) {
-      QRCode.toDataURL(appleProfileUrl(config.organizationId ?? ''), { margin: 1, width: 200 })
-        .then(setQr)
-        .catch(() => setQr(null))
+    let alive = true
+    if (value) {
+      QRCode.toDataURL(value, { margin: 1, width })
+        .then((url) => alive && setQr(url))
+        .catch(() => alive && setQr(null))
     } else {
       setQr(null)
     }
-  }, [config?.configured, config?.dohHostname, config?.organizationId])
+    return () => { alive = false }
+  }, [value, width])
+  return qr ? (
+    <img src={qr} alt="QR" className="mx-auto rounded-lg" style={{ width, height: width }} />
+  ) : (
+    <div className="mx-auto grid place-items-center text-slate-300" style={{ width, height: width }}>
+      <Loader2 size={18} className="animate-spin" />
+    </div>
+  )
+}
+
+export default function NextDnsCard() {
+  const [config, setConfig] = useState<NextDnsConfig | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [provisioning, setProvisioning] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function load() {
     try {
-      setConfig(await api.get<CloudflareGatewayConfig>('/cloudflare-gateway'))
+      setConfig(await api.get<NextDnsConfig>('/nextdns'))
     } catch {
       /* keep */
     } finally {
@@ -61,10 +76,10 @@ export default function CloudflareGatewayCard() {
     setProvisioning(true)
     setError(null)
     try {
-      const c = await api.post<CloudflareGatewayConfig>('/cloudflare-gateway/provision', {})
+      const c = await api.post<NextDnsConfig>('/nextdns/provision', {})
       setConfig(c)
     } catch (err) {
-      setError(err instanceof ApiError ? (err.code === 'insufficient_role' ? 'Only the workspace owner can set this up.' : err.message) : 'Could not provision Cloudflare Gateway location.')
+      setError(err instanceof ApiError ? (err.code === 'insufficient_role' ? 'Only the workspace owner can set this up.' : err.message) : 'Could not create the DNS network configuration.')
     } finally {
       setProvisioning(false)
     }
@@ -73,19 +88,19 @@ export default function CloudflareGatewayCard() {
   async function disconnect() {
     if (!window.confirm('Disconnect DNS monitoring? Phone traffic will stop being monitored until you reconnect.')) return
     try {
-      await api.del('/cloudflare-gateway')
+      await api.del('/nextdns')
       await load()
     } catch {
       /* keep */
     }
   }
 
-  const connected = config?.configured && config.locationId && !provisioning
+  const connected = config?.configured && config.profileId && !provisioning
 
   return (
     <SectionCard
-      title="3. Monitor phones / whole home (DNS Setup)"
-      description="One-click setup — we create a private DNS location for your account. Free: 1M queries/mo, 7-day logs. Works on mobile data too."
+      title="3. Monitor phones / whole home (DNS Network Configuration)"
+      description="One click creates a private DNS network for your devices. You get a domain and QR codes — iPhone and Android are set up by scanning, no account or login needed."
       right={<Wifi size={18} className="text-slate-400" />}
     >
       <div className="space-y-4 p-5">
@@ -96,8 +111,13 @@ export default function CloudflareGatewayCard() {
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill tone="green">connected</StatusPill>
               <span className="text-sm text-slate-600">
-                Location <span className="font-mono">{config!.locationName ?? config!.locationId}</span>
+                Network <span className="font-mono">{config!.profileName ?? config!.profileId}</span>
               </span>
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">DNS domain (for manual setup)</p>
+              <CopyRow text={config!.dohHostname ?? ''} />
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -106,21 +126,17 @@ export default function CloudflareGatewayCard() {
                 <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
                   <Smartphone size={15} className="text-brand-600" /> iPhone — scan & install
                 </div>
-                {qr ? (
-                  <img src={qr} alt="Install QR" className="mx-auto h-40 w-40 rounded-lg" />
-                ) : (
-                  <div className="mx-auto grid h-40 w-40 place-items-center text-slate-300"><Loader2 size={18} className="animate-spin" /></div>
-                )}
+                <QrBox value={config!.organizationId ? appleProfileUrl(config!.organizationId) : null} />
                 <p className="mt-2 text-xs text-slate-500">Open the iPhone <span className="font-semibold">Camera</span>, point at the QR, tap the link, then <span className="font-semibold">Settings → Install</span> the profile. No app, no login.</p>
               </div>
 
-              {/* Android: Private DNS hostname */}
+              {/* Android: scan via link.nextdns.io */}
               <div className="rounded-xl border border-slate-200 p-4">
                 <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <Smartphone size={15} className="text-brand-600" /> Android — Private DNS
+                  <Smartphone size={15} className="text-brand-600" /> Android — scan to set up
                 </div>
-                <CopyRow text={config!.dohHostname ?? ''} />
-                <p className="mt-2 text-xs text-slate-500">Settings → Network → <span className="font-semibold">Private DNS</span> → "provider hostname" → paste the above. Use the hostname, not an IP.</p>
+                <QrBox value={config!.profileId ? androidLink(config!.profileId) : null} />
+                <p className="mt-2 text-xs text-slate-500">Open the Android <span className="font-semibold">Camera</span>, point at the QR, and tap the link — it configures Private DNS automatically. Or paste the domain above manually.</p>
               </div>
             </div>
 
@@ -138,32 +154,27 @@ export default function CloudflareGatewayCard() {
           <>
             <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
               <p className="text-sm text-slate-700">
-                <strong>Zero setup required.</strong> We handle everything — you just click Enable. Your account gets a private DNS location
-                (e.g. <code className="font-mono text-[12px]">org-abc123.dns.cloudflare-gateway.com</code>)
-                with 1M free queries/month and 7-day log retention.
+                <strong>Zero setup required.</strong> We handle everything — you just click. Your workspace gets a private NextDNS network
+                (e.g. <code className="font-mono text-[12px]">abc123.dns.nextdns.io</code>) with threat filtering and query logs
+                that appear here as security events.
               </p>
             </div>
 
             {error && <p className="text-sm text-red-700">{error}</p>}
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="btn-primary btn-sm"
-                onClick={provision}
-                disabled={provisioning || !settings.cloudflare_gateway_ready}
-              >
+              <button type="button" className="btn-primary btn-sm" onClick={provision} disabled={provisioning}>
                 {provisioning
                   ? <Loader2 size={14} className="animate-spin" />
                   : <Globe size={14} />}
-                {provisioning ? 'Provisioning…' : 'Enable phone monitoring'}
+                {provisioning ? 'Creating…' : 'Get DNS Network Configuration'}
               </button>
-              {provisioning && <span className="text-xs text-slate-500">Creating your private DNS location…</span>}
+              {provisioning && <span className="text-xs text-slate-500">Creating your private DNS network…</span>}
             </div>
 
             <p className="text-xs text-slate-500">
-              After enabling, you'll get a <strong>DoH hostname</strong> for iPhone (QR) and Android (Private DNS).
-              Works on WiFi and mobile data. No account needed on your side.
+              After enabling, you'll get a <strong>DNS domain</strong> plus <strong>QR codes for iPhone and Android</strong>.
+              Works on WiFi and mobile data. No NextDNS account needed on your side.
             </p>
           </>
         )}
@@ -171,7 +182,3 @@ export default function CloudflareGatewayCard() {
     </SectionCard>
   )
 }
-
-// We need to access settings.cloudflare_gateway_ready from frontend
-// For now, assume it's configured on backend
-const settings = { cloudflare_gateway_ready: true }
