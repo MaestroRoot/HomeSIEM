@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, Copy, Cpu, KeyRound, Loader2, Radio, ShieldCheck, Trash2 } from 'lucide-react'
+import { Check, Copy, Cpu, Download, KeyRound, Loader2, Monitor, Radio, ShieldCheck, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import CloudflareGatewayCard from '@/components/dashboard/CloudflareGatewayCard'
 import { api, ApiError } from '@/lib/api'
@@ -13,6 +13,16 @@ const DOWNLOAD_BASE = typeof window !== 'undefined' ? window.location.origin : '
 //: Agent ni program ya nje (si browser), kwa hiyo HOMESIEM_URL LAZIMA iwe
 //: kamili. VITE_API_BASE_URL ikiwa relative (mfano /api/v1), iunganishe na origin.
 const API_ABS = API_BASE.startsWith('http') ? API_BASE : `${DOWNLOAD_BASE}${API_BASE}`
+//: Releases za desktop agent (HomeSIEM.exe). Pakia faili zilizobuild na
+//: uzipaste kwenye GitHub Releases ili links hizi zifanye kazi.
+const RELEASES = 'https://github.com/MaestroRoot/homesiem-agent/releases/latest/download'
+const AGENT_VERSION = '1.0.0'
+
+const AGENT_DOWNLOADS = [
+  { platform: 'Windows', icon: Monitor, ext: 'x64-setup.exe', desc: 'Windows 10 / 11 (64-bit)' },
+  { platform: 'macOS', icon: Monitor, ext: 'x64.dmg', desc: 'macOS 12+ (Intel)' },
+  { platform: 'Linux', icon: Monitor, ext: 'amd64.deb', desc: 'Debian / Ubuntu' },
+]
 
 function agentOnline(a: AgentRecord): boolean {
   return a.lastSeenAt ? Date.now() - new Date(a.lastSeenAt).getTime() < 30000 : false
@@ -95,8 +105,41 @@ export default function Agents() {
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Agents" value={agents.length} sub="Enrolled hosts" icon={Cpu} />
         <StatCard label="Online" value={agents.filter(agentOnline).length} sub="Reporting now" icon={Radio} tone="green" />
-        <StatCard label="Capabilities" value="4" sub="scan · forensics · capture · logs" icon={ShieldCheck} />
+        <StatCard label="Capabilities" value="6" sub="scan · forensics · logs · software · discovery" icon={ShieldCheck} />
       </div>
+
+      {/* Step 0: download desktop app */}
+      <SectionCard
+        title="Download HomeSIEM Agent"
+        description={`Desktop app (v${AGENT_VERSION}) for Windows, macOS and Linux. Install, paste your token, pick features, and it runs in the background automatically.`}
+        right={<span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-700">New</span>}
+      >
+        <div className="p-5">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {AGENT_DOWNLOADS.map((d) => (
+              <a
+                key={d.platform}
+                href={`${RELEASES}/HomeSIEM_${AGENT_VERSION}_${d.ext}`}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 transition-colors hover:border-brand-400 hover:bg-brand-50/50"
+              >
+                <div className="flex items-center gap-2.5">
+                  <d.icon size={20} className="text-brand-600" />
+                  <span className="font-semibold text-slate-900">{d.platform}</span>
+                </div>
+                <span className="text-xs text-slate-500">{d.desc}</span>
+                <span className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 group-hover:underline">
+                  <Download size={13} /> Download .exe
+                </span>
+              </a>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            No Python needed — the app is a standalone installer. After installing, open it, paste the token from step 1 below, choose features (DNS, Forensics, Event Logs, Network, Software), and it will start with Windows.
+          </p>
+        </div>
+      </SectionCard>
 
       {/* Step 1: token */}
       <SectionCard title="1. Generate a token" description="Create a token, then paste it into the setup command below." right={<KeyRound size={18} className="text-slate-400" />}>
@@ -117,11 +160,12 @@ export default function Agents() {
       </SectionCard>
 
       {/* Step 2: install agent */}
-      <SectionCard title="2. Install the agent (does everything)" description="Run once on the host (Windows). It downloads the agent, enrolls, and stays running.">
+      <SectionCard title="2. Use the desktop app" description="Run HomeSIEM Agent. It enrolls once and keeps running in the background.">
         <div className="space-y-3 p-5">
-          <p className="text-sm text-slate-600">You need <span className="font-semibold">Python 3</span> installed (python.org → “Add to PATH”). Then, for forensics, one dependency:</p>
+          <p className="text-sm text-slate-600"><span className="font-semibold">Recommended:</span> Download the app above, install it, open it, and paste your token. Choose the features you want and it will start with Windows automatically.</p>
+          <p className="text-sm text-slate-600">For advanced users (or Linux servers), you can use the Python agent instead. You need <span className="font-semibold">Python 3</span> (python.org → “Add to PATH”). Then, for forensics, one dependency:</p>
           <CopyBlock text={`python -m pip install psutil`} />
-          <p className="text-sm text-slate-600">Now open <span className="font-semibold">PowerShell</span> (as administrator for full access) and paste this, it downloads the agent and runs it:</p>
+          <p className="text-sm text-slate-600">Open <span className="font-semibold">PowerShell</span> (as administrator for full access) and paste this, it downloads the agent and runs it:</p>
           <CopyBlock text={agentCmd} />
           <p className="text-xs text-slate-500">It enrolls once and keeps running. After this, use the Vulnerability Scanner, Forensics, Live Capture and Log Collection pages to trigger work on this host by clicking, no more commands.</p>
         </div>
