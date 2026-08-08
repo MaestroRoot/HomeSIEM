@@ -16,7 +16,7 @@ const API_ABS = API_BASE.startsWith('http') ? API_BASE : `${DOWNLOAD_BASE}${API_
 //: Releases za desktop agent (HomeSIEM.exe). Pakia faili zilizobuild na
 //: uzipaste kwenye GitHub Releases ili links hizi zifanye kazi.
 const RELEASES = 'https://github.com/MaestroRoot/homesiem-agent/releases/latest/download'
-const AGENT_VERSION = '1.0.0'
+const AGENT_VERSION = '1.0.1'
 
 const AGENT_DOWNLOADS = [
   { platform: 'Windows', icon: Monitor, ext: 'x64-setup.exe', desc: 'Windows 10 / 11 (64-bit)' },
@@ -142,7 +142,7 @@ export default function Agents() {
       </SectionCard>
 
       {/* Step 1: token */}
-      <SectionCard title="1. Generate a token" description="Create a token, then paste it into the setup command below." right={<KeyRound size={18} className="text-slate-400" />}>
+      <SectionCard title="1. Generate a token" description="Create a token, copy it, then paste it into the desktop app (or the Python command in step 2)." right={<KeyRound size={18} className="text-slate-400" />}>
         <form onSubmit={generate} className="flex flex-col gap-3 p-5 sm:flex-row">
           <input className="input flex-1" placeholder="Sensor name, e.g. Home Pi" value={label} onChange={(e) => setLabel(e.target.value)} />
           <button type="submit" className="btn-primary sm:w-48" disabled={busy}>
@@ -152,9 +152,9 @@ export default function Agents() {
         {error && <div className="px-5 pb-4 text-sm text-red-700">{error}</div>}
         {token && (
           <div className="mx-5 mb-5 rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
-            <p className="text-sm font-semibold text-emerald-800">✓ Token for “{token.label}” created, it is already filled into the command below. Just copy and run it on the host:</p>
-            <div className="mt-3"><CopyBlock text={agentCmd} /></div>
-            <p className="mt-2 text-xs text-emerald-700">The token is shown only once. It is also filled into the commands in steps 2 and 3 below.</p>
+            <p className="text-sm font-semibold text-emerald-800">✓ Token for “{token.label}” created. Copy it and paste it into the app:</p>
+            <div className="mt-3"><CopyBlock text={tok} /></div>
+            <p className="mt-2 text-xs text-emerald-700">The token is shown only once. The same token is also used by the Python command in step 2 below.</p>
           </div>
         )}
       </SectionCard>
