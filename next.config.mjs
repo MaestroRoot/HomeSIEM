@@ -1,6 +1,9 @@
+import { withSentryConfig } from '@sentry/nextjs'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: { unoptimized: true },
+  experimental: { instrumentationHook: true },
   // Soma env za build na uziweke kama NEXT_PUBLIC_* kwenye bundle za client.
   // Fallback kwa VITE_* zilizopo kwenye Vercel project settings — hivyo
   // hakuna haja ya kubadilisha mazingira ya deploy wakati wa migration.
@@ -25,6 +28,10 @@ const nextConfig = {
       process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID ||
       process.env.VITE_FIREBASE_MEASUREMENT_ID ||
       '',
+    NEXT_PUBLIC_SENTRY_DSN:
+      process.env.NEXT_PUBLIC_SENTRY_DSN ||
+      process.env.VITE_SENTRY_DSN ||
+      'https://ff3e0eea0b7eee2bdfa26d38ab93b9ec@o4511829146730496.ingest.us.sentry.io/4511875693740032',
   },
   async rewrites() {
     return [
@@ -36,4 +43,14 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withSentryConfig(nextConfig, {
+  org: 'maestro-69',
+  project: 'homesiem',
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  telemetry: false,
+  silent: !process.env.CI,
+  // Usipande source maps kama hakuna auth token — error capture inafanya
+  // kazi hata bila token (tu stack trace itakuwa minified). Kama unataka
+  // source maps, weka SENTRY_AUTH_TOKEN kwenye Vercel env.
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+})
