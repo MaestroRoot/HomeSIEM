@@ -1,9 +1,7 @@
 import { auth } from './firebase'
+import { API_BASE_URL } from './env'
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1').replace(
-  /\/$/,
-  '',
-)
+const BASE_URL = API_BASE_URL
 
 /** Umbo la error linalotoka backend: `{ detail, code }`. */
 export class ApiError extends Error {

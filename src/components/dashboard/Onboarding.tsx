@@ -15,8 +15,9 @@ import {
 import QRCode from 'qrcode'
 import { api, ApiError } from '@/lib/api'
 import type { NextDnsConfig } from '@/lib/types'
+import { API_BASE_URL } from '@/lib/env'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1').replace(/\/$/, '')
+const API_BASE = API_BASE_URL
 
 function CopyRow({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)

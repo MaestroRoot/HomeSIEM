@@ -4,8 +4,9 @@ import { Check, Copy, Globe, Loader2, Smartphone, Trash2, Wifi } from 'lucide-re
 import { SectionCard, StatusPill } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
 import type { NextDnsConfig } from '@/lib/types'
+import { API_BASE_URL } from '@/lib/env'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1').replace(/\/$/, '')
+const API_BASE = API_BASE_URL
 
 function appleProfileUrl(orgId: string): string {
   const base = API_BASE.startsWith('http') ? API_BASE : `${window.location.origin}${API_BASE}`

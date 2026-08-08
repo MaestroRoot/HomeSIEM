@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle, Loader2, Mail, MessageSquare, Phone, Send, User } from 'lucide-react'
 import Navbar from '@/components/landing/Navbar'
 import Footer from '@/components/landing/Footer'
+import { API_BASE_URL } from '@/lib/env'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1').replace(/\/$/, '')
+const API_BASE = API_BASE_URL
 
 const topics = [
   'General inquiry',

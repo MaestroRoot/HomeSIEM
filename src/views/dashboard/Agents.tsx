@@ -4,9 +4,10 @@ import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/comp
 import NextDnsCard from '@/components/dashboard/NextDnsCard'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
+import { API_BASE_URL } from '@/lib/env'
 import type { AgentRecord, SensorTokenCreated } from '@/lib/types'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api/v1') as string
+const API_BASE = API_BASE_URL
 //: Script za sensor zinahudumiwa kutoka origin ile ile ya app (folda ya
 //: `public/`), mfano https://home-siem.vercel.app/agent.py
 const DOWNLOAD_BASE = typeof window !== 'undefined' ? window.location.origin : ''
