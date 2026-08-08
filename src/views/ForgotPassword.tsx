@@ -32,7 +32,7 @@ const STEP_LABEL: Record<Step, string> = {
 }
 
 const STEP_SUB: Record<Step, string> = {
-  email: 'Tell us the email on your account and we will send a six digit code.',
+  email: 'Enter the email on your account and we will send a six digit code.',
   code: 'Enter the six digit code we emailed you. It is valid for a few minutes.',
   password: 'Pick something you have not used here before.',
   done: 'You can sign in with your new password now.',
@@ -74,7 +74,7 @@ export default function ForgotPassword() {
       setNotice(
         resend
           ? 'A new code is on its way.'
-          : `If ${email.trim()} has an account, the code is on its way.`,
+          : 'A six digit code is on its way.',
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'We could not send the code.')
