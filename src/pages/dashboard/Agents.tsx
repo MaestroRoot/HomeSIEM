@@ -16,7 +16,7 @@ const API_ABS = API_BASE.startsWith('http') ? API_BASE : `${DOWNLOAD_BASE}${API_
 //: Releases za desktop agent (HomeSIEM.exe). Pakia faili zilizobuild na
 //: uzipaste kwenye GitHub Releases ili links hizi zifanye kazi.
 const RELEASES = 'https://github.com/MaestroRoot/homesiem-agent/releases/latest/download'
-const AGENT_VERSION = '1.0.1'
+const AGENT_VERSION = '1.0.2'
 
 const AGENT_DOWNLOADS = [
   { platform: 'Windows', icon: Monitor, ext: 'x64-setup.exe', desc: 'Windows 10 / 11 (64-bit)' },
