@@ -33,6 +33,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             gtag('config', 'G-5SR74T88SH');
           `}
         </Script>
+        <Script
+          src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'test'}&currency=USD&intent=capture`}
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )
