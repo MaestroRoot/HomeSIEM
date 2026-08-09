@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
 import {
   AlertCircle,
   ArrowRight,
@@ -13,7 +12,6 @@ import {
   Receipt,
   Smartphone,
   Sparkles,
-  Wallet,
   X,
 } from 'lucide-react'
 
@@ -59,7 +57,6 @@ const CHANNEL_LABEL: Record<PaymentChannel, string> = {
   halopesa: 'HaloPesa',
   airtel_money: 'Airtel Money',
   card: 'Bank card',
-  paypal: 'PayPal',
   pesapal: 'PesaPal',
 }
 
@@ -111,7 +108,6 @@ function formatDate(value: string | null): string {
 export default function Subscriptions() {
   const { user, refreshUser } = useAuth()
   const { state, loading, error: subError, reload } = useSubscription()
-  const searchParams = useSearchParams()
 
   const [payments, setPayments] = useState<PaymentRead[]>([])
   const [loadError, setLoadError] = useState('')
@@ -145,26 +141,6 @@ export default function Subscriptions() {
     await load()
     await refreshUser()
   }
-
-  useEffect(() => {
-    const paypalStatus = searchParams.get('paypal')
-    const token = searchParams.get('token')
-    if (paypalStatus === 'success' && token) {
-      void (async () => {
-        try {
-          const response = await api.post<CheckoutResponse>('/subscriptions/paypal/capture', { orderId: token })
-          if (response.redirectUrl) {
-            window.location.href = response.redirectUrl
-            return
-          }
-          await onPaid(response)
-        } catch {
-          setLoadError('PayPal payment could not be confirmed. Please contact support if you were charged.')
-        }
-        window.history.replaceState({}, '', '/dashboard/subscriptions')
-      })()
-    }
-  }, [searchParams])
 
   const current = state?.subscription
   const plans = state?.catalogue.plans ?? []
@@ -654,31 +630,11 @@ function CheckoutDialog({
 
     let body: Record<string, unknown>
 
-    if (method === 'paypal') {
-      body = {
-        plan: plan.plan,
-        returnUrl: `${window.location.origin}/dashboard/subscriptions?paypal=success`,
-        cancelUrl: `${window.location.origin}/dashboard/subscriptions?paypal=cancel`,
-      }
-      setBusy(true)
-      try {
-        const response = await api.post<{ orderId: string; approveUrl: string; paymentReference: string }>('/subscriptions/paypal/create-order', body)
-        window.location.href = response.approveUrl
-        return
-      } catch (err) {
-        setError(
-          err instanceof ApiError || err instanceof Error ? err.message : 'Could not start PayPal payment.',
-        )
-        setBusy(false)
-        return
-      }
-    }
-
     if (method === 'pesapal') {
-      // PesaPal card payment — redirect to PesaPal checkout
+      // PesaPal card payment — redirect to PesaPal hosted checkout
       body = {
         plan: plan.plan,
-        method: 'bank_card',
+        method: 'pesapal',
         channel: 'pesapal',
         returnUrl: `${window.location.origin}/dashboard/subscriptions?pesapal=success`,
         cancelUrl: `${window.location.origin}/dashboard/subscriptions?pesapal=cancel`,
@@ -790,22 +746,6 @@ function CheckoutDialog({
                 <span>
                   <span className="block text-sm font-semibold text-slate-800">Phone</span>
                   <span className="block text-xs text-slate-500">Mobile money</span>
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMethod('paypal')}
-                className={cx(
-                  'flex items-center gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-all',
-                  method === 'paypal'
-                    ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-200'
-                    : 'border-slate-200 hover:border-brand-300',
-                )}
-              >
-                <Wallet size={18} className="shrink-0 text-blue-600" />
-                <span>
-                  <span className="block text-sm font-semibold text-slate-800">PayPal</span>
-                  <span className="block text-xs text-slate-500">Card or PayPal account</span>
                 </span>
               </button>
               <button
@@ -970,15 +910,6 @@ function CheckoutDialog({
                 gateway, and we keep only the last four digits.
               </p>
             </>
-          )}
-
-          {method === 'paypal' && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
-              <p className="text-sm text-blue-800">
-                You will be redirected to PayPal. Choose <strong>Pay with Debit or Credit Card</strong> to
-                pay directly with your bank card — no PayPal account needed.
-              </p>
-            </div>
           )}
 
           {method === 'pesapal' && (
