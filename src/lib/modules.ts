@@ -467,6 +467,18 @@ export const modules: AppModule[] = [
     internal: true,
   },
   {
+    id: 'custom-dashboards',
+    no: 27,
+    name: 'Custom Dashboards',
+    path: '/dashboard/custom-dashboards',
+    icon: LayoutDashboard,
+    category: 'Core',
+    tagline: 'Build your own views',
+    description:
+      'Create dashboards with custom widgets — charts, tables, single values, alert feeds. Choose from templates or build from scratch.',
+    bullets: ['Drag & drop widgets', 'Executive, SOC, Network templates', 'Share with your team'],
+  },
+  {
     id: 'account',
     no: 2,
     name: 'Account',
