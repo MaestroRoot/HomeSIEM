@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   AlertCircle,
   ArrowRight,
@@ -13,6 +14,7 @@ import {
   Receipt,
   Smartphone,
   Sparkles,
+  Wallet,
   X,
 } from 'lucide-react'
 
@@ -57,6 +59,7 @@ const CHANNEL_LABEL: Record<PaymentChannel, string> = {
   halopesa: 'HaloPesa',
   airtel_money: 'Airtel Money',
   card: 'Bank card',
+  paypal: 'PayPal',
 }
 
 const STATUS_TONE: Record<PaymentRead['status'], 'green' | 'amber' | 'red' | 'slate'> = {
@@ -107,6 +110,7 @@ function formatDate(value: string | null): string {
 export default function Subscriptions() {
   const { user, refreshUser } = useAuth()
   const { state, loading, error: subError, reload } = useSubscription()
+  const searchParams = useSearchParams()
 
   const [payments, setPayments] = useState<PaymentRead[]>([])
   const [loadError, setLoadError] = useState('')
@@ -134,6 +138,31 @@ export default function Subscriptions() {
     void load()
   }, [load])
 
+  async function onPaid(response: CheckoutResponse) {
+    setSelected(null)
+    setReceipt(response)
+    await load()
+    await refreshUser()
+  }
+
+  // Handle PayPal return — capture the order if payment was successful
+  useEffect(() => {
+    const paypalStatus = searchParams.get('paypal')
+    const token = searchParams.get('token')
+    if (paypalStatus === 'success' && token) {
+      void (async () => {
+        try {
+          const response = await api.post<CheckoutResponse>('/subscriptions/paypal/capture', { orderId: token })
+          await onPaid(response)
+        } catch {
+          setLoadError('PayPal payment could not be confirmed. Please contact support if you were charged.')
+        }
+        // Clean up URL params
+        window.history.replaceState({}, '', '/dashboard/subscriptions')
+      })()
+    }
+  }, [searchParams])
+
   const current = state?.subscription
   const plans = state?.catalogue.plans ?? []
   const currentSpec = useMemo(
@@ -146,13 +175,6 @@ export default function Subscriptions() {
     () => Math.max(...plans.map((p) => p.modules.length), 0),
     [plans],
   )
-
-  async function onPaid(response: CheckoutResponse) {
-    setSelected(null)
-    setReceipt(response)
-    await load()
-    await refreshUser()
-  }
 
   async function cancelPending(reference: string) {
     try {
@@ -611,7 +633,7 @@ function CheckoutDialog({
   onClose: () => void
   onPaid: (response: CheckoutResponse) => Promise<void>
 }) {
-  const [method] = useState<PaymentMethod>('mobile_money')
+  const [method, setMethod] = useState<PaymentMethod>('mobile_money')
   const [channel, setChannel] = useState<PaymentChannel>(DEFAULT_CHANNEL)
   const [msisdn, setMsisdn] = useState('')
 
@@ -628,6 +650,26 @@ function CheckoutDialog({
     setError('')
 
     let body: Record<string, unknown>
+
+    if (method === 'paypal') {
+      body = {
+        plan: plan.plan,
+        returnUrl: `${window.location.origin}/dashboard/subscriptions?paypal=success`,
+        cancelUrl: `${window.location.origin}/dashboard/subscriptions?paypal=cancel`,
+      }
+      setBusy(true)
+      try {
+        const response = await api.post<{ orderId: string; approveUrl: string; paymentReference: string }>('/subscriptions/paypal/create-order', body)
+        window.location.href = response.approveUrl
+        return
+      } catch (err) {
+        setError(
+          err instanceof ApiError || err instanceof Error ? err.message : 'Could not start PayPal payment.',
+        )
+        setBusy(false)
+        return
+      }
+    }
 
     if (method === 'mobile_money') {
       if (msisdn.replace(/\D/g, '').length < 9) {
@@ -700,11 +742,16 @@ function CheckoutDialog({
 
           <div>
             <span className="label">How would you like to pay?</span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => setChannel(DEFAULT_CHANNEL)}
-                className="flex items-center gap-2.5 rounded-lg border border-brand-500 bg-brand-50 px-3.5 py-3 text-left ring-1 ring-brand-200 transition-all"
+                onClick={() => setMethod('mobile_money')}
+                className={cx(
+                  'flex items-center gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-all',
+                  method === 'mobile_money'
+                    ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-200'
+                    : 'border-slate-200 hover:border-brand-300',
+                )}
               >
                 <Smartphone size={18} className="shrink-0 text-brand-600" />
                 <span>
@@ -727,10 +774,26 @@ function CheckoutDialog({
                   Coming soon
                 </span>
               </button>
+              <button
+                type="button"
+                onClick={() => setMethod('paypal')}
+                className={cx(
+                  'flex items-center gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-all',
+                  method === 'paypal'
+                    ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-200'
+                    : 'border-slate-200 hover:border-brand-300',
+                )}
+              >
+                <Wallet size={18} className="shrink-0 text-blue-600" />
+                <span>
+                  <span className="block text-sm font-semibold text-slate-800">PayPal</span>
+                  <span className="block text-xs text-slate-500">International</span>
+                </span>
+              </button>
             </div>
           </div>
 
-          {method === 'mobile_money' ? (
+          {method === 'mobile_money' && (
             <>
               <div>
                 <span className="label">Provider</span>
@@ -784,7 +847,9 @@ function CheckoutDialog({
                 </p>
               </div>
             </>
-          ) : (
+          )}
+
+          {method === 'bank_card' && (
             <>
               <div>
                 <label className="label" htmlFor="card-number">
@@ -871,6 +936,16 @@ function CheckoutDialog({
                 gateway, and we keep only the last four digits.
               </p>
             </>
+          )}
+
+          {method === 'paypal' && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+              <p className="text-sm text-blue-800">
+                You will be redirected to PayPal to complete the payment securely. After
+                confirming, you will be returned here and your plan will be upgraded
+                automatically.
+              </p>
+            </div>
           )}
 
           <div className="flex items-center justify-between border-t border-slate-100 pt-4">
