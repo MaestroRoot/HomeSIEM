@@ -7,7 +7,6 @@ import {
   CalendarClock,
   Check,
   CreditCard,
-  Landmark,
   Loader2,
   Lock,
   Phone,
@@ -742,7 +741,7 @@ function CheckoutDialog({
 
           <div>
             <span className="label">How would you like to pay?</span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setMethod('mobile_money')}
@@ -761,21 +760,6 @@ function CheckoutDialog({
               </button>
               <button
                 type="button"
-                disabled
-                title="Bank card payments are coming soon"
-                className="relative flex cursor-not-allowed items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-3 text-left opacity-70"
-              >
-                <Landmark size={18} className="shrink-0 text-slate-400" />
-                <span>
-                  <span className="block text-sm font-semibold text-slate-500">Bank</span>
-                  <span className="block text-xs text-slate-400">Debit or credit card</span>
-                </span>
-                <span className="absolute right-2 top-2 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                  Coming soon
-                </span>
-              </button>
-              <button
-                type="button"
                 onClick={() => setMethod('paypal')}
                 className={cx(
                   'flex items-center gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-all',
@@ -786,8 +770,8 @@ function CheckoutDialog({
               >
                 <Wallet size={18} className="shrink-0 text-blue-600" />
                 <span>
-                  <span className="block text-sm font-semibold text-slate-800">PayPal</span>
-                  <span className="block text-xs text-slate-500">International</span>
+                  <span className="block text-sm font-semibold text-slate-800">Bank & PayPal</span>
+                  <span className="block text-xs text-slate-500">Card or PayPal</span>
                 </span>
               </button>
             </div>
@@ -941,9 +925,9 @@ function CheckoutDialog({
           {method === 'paypal' && (
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
               <p className="text-sm text-blue-800">
-                You will be redirected to PayPal to complete the payment securely. After
-                confirming, you will be returned here and your plan will be upgraded
-                automatically.
+                You will be redirected to PayPal to complete the payment. You can pay
+                using your PayPal account, or choose <strong>Pay with Debit or Credit Card</strong> to
+                pay directly with your bank card — no PayPal account needed.
               </p>
             </div>
           )}
