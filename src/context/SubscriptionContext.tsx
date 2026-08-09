@@ -47,7 +47,7 @@ export interface SubscriptionRead {
 }
 
 export type PaymentMethod = 'mobile_money' | 'bank_card' | 'paypal'
-export type PaymentChannel = 'yas_mix' | 'mpesa' | 'halopesa' | 'airtel_money' | 'card' | 'paypal'
+export type PaymentChannel = 'yas_mix' | 'mpesa' | 'halopesa' | 'airtel_money' | 'card' | 'paypal' | 'pesapal'
 
 export interface PaymentRead {
   id: string
