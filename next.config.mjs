@@ -32,6 +32,9 @@ const nextConfig = {
       process.env.NEXT_PUBLIC_SENTRY_DSN ||
       process.env.VITE_SENTRY_DSN ||
       'https://ff3e0eea0b7eee2bdfa26d38ab93b9ec@o4511829146730496.ingest.us.sentry.io/4511875693740032',
+    NEXT_PUBLIC_PAYPAL_CLIENT_ID:
+      process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+      'BAA7JJhD0oOTHAWkriPxUjljoHK3FxevkvfszZeoqApaghqAsvVyqsVlAeRU71CnKo0-25eE8zKJGnAAUY',
   },
   async rewrites() {
     return [
