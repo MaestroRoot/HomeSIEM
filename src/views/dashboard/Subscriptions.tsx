@@ -36,7 +36,6 @@ interface CheckoutResponse {
   payment: PaymentRead
   subscription: SubscriptionRead
   instruction: string
-  redirectUrl?: string | null
 }
 
 /* ---------- watoa huduma wa malipo ---------- */
@@ -57,7 +56,6 @@ const CHANNEL_LABEL: Record<PaymentChannel, string> = {
   halopesa: 'HaloPesa',
   airtel_money: 'Airtel Money',
   card: 'Bank card',
-  pesapal: 'PesaPal',
 }
 
 const STATUS_TONE: Record<PaymentRead['status'], 'green' | 'amber' | 'red' | 'slate'> = {
@@ -630,32 +628,6 @@ function CheckoutDialog({
 
     let body: Record<string, unknown>
 
-    if (method === 'pesapal') {
-      // PesaPal card payment — redirect to PesaPal hosted checkout
-      body = {
-        plan: plan.plan,
-        method: 'pesapal',
-        channel: 'pesapal',
-        returnUrl: `${window.location.origin}/dashboard/subscriptions?pesapal=success`,
-        cancelUrl: `${window.location.origin}/dashboard/subscriptions?pesapal=cancel`,
-      }
-      setBusy(true)
-      try {
-        const response = await api.post<CheckoutResponse>('/subscriptions/checkout', body)
-        if (response.redirectUrl) {
-          window.location.href = response.redirectUrl
-          return
-        }
-        await onPaid(response)
-      } catch (err) {
-        setError(
-          err instanceof ApiError || err instanceof Error ? err.message : 'Could not start PesaPal payment.',
-        )
-        setBusy(false)
-        return
-      }
-    }
-
     if (method === 'mobile_money') {
       if (msisdn.replace(/\D/g, '').length < 9) {
         return setError('Enter a phone number, for example 0712345678.')
@@ -686,10 +658,6 @@ function CheckoutDialog({
     setBusy(true)
     try {
       const response = await api.post<CheckoutResponse>('/subscriptions/checkout', body)
-      if (response.redirectUrl) {
-        window.location.href = response.redirectUrl
-        return
-      }
       await onPaid(response)
     } catch (err) {
       setError(
@@ -750,18 +718,18 @@ function CheckoutDialog({
               </button>
               <button
                 type="button"
-                onClick={() => setMethod('pesapal')}
+                onClick={() => setMethod('bank_card')}
                 className={cx(
                   'flex items-center gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-all',
-                  method === 'pesapal'
+                  method === 'bank_card'
                     ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-200'
                     : 'border-slate-200 hover:border-brand-300',
                 )}
               >
                 <CreditCard size={18} className="shrink-0 text-emerald-600" />
                 <span>
-                  <span className="block text-sm font-semibold text-slate-800">Card (PesaPal)</span>
-                  <span className="block text-xs text-slate-500">Visa, Mastercard, AMEX</span>
+                  <span className="block text-sm font-semibold text-slate-800">Bank Card</span>
+                  <span className="block text-xs text-slate-500">Visa, Mastercard</span>
                 </span>
               </button>
             </div>
@@ -910,15 +878,6 @@ function CheckoutDialog({
                 gateway, and we keep only the last four digits.
               </p>
             </>
-          )}
-
-          {method === 'pesapal' && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
-              <p className="text-sm text-emerald-800">
-                You will be redirected to PesaPal secure checkout. Choose your card type (Visa, Mastercard, or AMEX)
-                and enter your card details. No account needed.
-              </p>
-            </div>
           )}
 
           <div className="flex items-center justify-between border-t border-slate-100 pt-4">
