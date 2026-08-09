@@ -20,7 +20,7 @@ const RELEASES = 'https://github.com/MaestroRoot/homesiem-agent/releases/latest/
 const AGENT_VERSION = '1.0.10'
 
 const AGENT_DOWNLOADS = [
-  { platform: 'Windows', icon: Monitor, ext: 'x64-setup.exe', desc: 'Windows 10 / 11 (64-bit)' },
+  { platform: 'Windows', icon: Monitor, ext: 'x64-setup.exe', desc: 'Windows 11+ (64-bit, DNS tab needs Win11+)' },
   { platform: 'macOS', icon: Monitor, ext: 'universal.dmg', desc: 'macOS 12+ (Intel & Apple Silicon)' },
   { platform: 'Linux', icon: Monitor, ext: 'amd64.deb', desc: 'Debian / Ubuntu' },
 ]

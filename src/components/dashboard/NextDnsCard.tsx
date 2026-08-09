@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import { Check, Copy, Globe, Loader2, Smartphone, Trash2, Wifi } from 'lucide-react'
+import { Check, Copy, Globe, Loader2, Monitor, Smartphone, Trash2, Wifi } from 'lucide-react'
 import { SectionCard, StatusPill } from '@/components/ui'
 import { api, ApiError } from '@/lib/api'
 import type { NextDnsConfig } from '@/lib/types'
@@ -139,6 +139,18 @@ export default function NextDnsCard() {
                 <QrBox value={config!.profileId ? androidLink(config!.profileId) : null} />
                 <p className="mt-2 text-xs text-slate-500">Open the Android <span className="font-semibold">Camera</span>, point at the QR, and tap the link — it configures Private DNS automatically. Or paste the domain above manually.</p>
               </div>
+            </div>
+
+            {/* Windows PC: agent DNS tab */}
+            <div className="rounded-xl border border-slate-200 p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <Monitor size={15} className="text-brand-600" /> Windows PC — via the Agent app
+              </div>
+              <p className="text-xs text-slate-500">
+                Open the <span className="font-semibold">HomeSIEM Agent</span> on your PC, go to the <span className="font-semibold">DNS</span> tab, and click <span className="font-semibold">Configure Windows DoH</span>.
+                The agent auto-fetches your DNS domain from this workspace and configures DNS-over-HTTPS with encryption on port 443 — your ISP cannot intercept it.
+              </p>
+              <p className="mt-1.5 text-xs text-slate-400">Requires Windows 11+ and the HomeSIEM Agent installed on the PC.</p>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 text-xs text-slate-500">
