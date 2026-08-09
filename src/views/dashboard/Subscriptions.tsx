@@ -37,6 +37,7 @@ interface CheckoutResponse {
   payment: PaymentRead
   subscription: SubscriptionRead
   instruction: string
+  redirectUrl?: string | null
 }
 
 /* ---------- watoa huduma wa malipo ---------- */
@@ -660,6 +661,10 @@ function CheckoutDialog({
     setBusy(true)
     try {
       const response = await api.post<CheckoutResponse>('/subscriptions/checkout', body)
+      if (response.redirectUrl) {
+        window.location.href = response.redirectUrl
+        return
+      }
       await onPaid(response)
     } catch (err) {
       setError(
