@@ -36,7 +36,7 @@ export const PLAN_RANK: Record<Plan, number> = {
   Business: 3,
 }
 
-const FREE_MODULES = ['overview', 'devices', 'search', 'alerts', 'score', 'ueba', 'compliance', 'account']
+const FREE_MODULES = ['overview', 'devices', 'search', 'alerts', 'score', 'ueba', 'compliance', 'account', 'custom-dashboards']
 const HOME_MODULES = [
   ...FREE_MODULES,
   'agents',
