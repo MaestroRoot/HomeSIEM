@@ -46,6 +46,7 @@ const routeTitles: Record<string, string> = {
   '/dashboard/attack-chain': 'Attack Chain',
   '/dashboard/geo-map': 'Geo Threat Map',
   '/dashboard/coverage': 'Detection Coverage',
+  '/dashboard/custom-dashboards': 'Custom Dashboards',
   '/dashboard/account': 'Account',
   '/dashboard/subscriptions': 'Subscriptions',
 }
