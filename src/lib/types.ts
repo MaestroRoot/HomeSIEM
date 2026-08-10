@@ -166,6 +166,7 @@ export interface SecurityEventRow {
   deviceId: string | null
   deviceName: string | null
   kind: 'dns' | 'flow'
+  eventType: string | null
   srcIp: string | null
   srcMac: string | null
   domain: string | null
@@ -178,6 +179,12 @@ export interface SecurityEventRow {
   country: string | null
   asn: number | null
   asnOrg: string | null
+  account: string | null
+  processName: string | null
+  commandLine: string | null
+  filePath: string | null
+  parentProcess: string | null
+  source: string | null
   occurredAt: string | null
   createdAt: string
 }
@@ -226,12 +233,18 @@ export interface SecurityScore {
 export interface DetectionRule {
   id: string
   name: string
+  description: string
   enabled: boolean
-  conditionType: 'verdict_is' | 'domain_contains' | 'country_is' | 'pulse_count_gte'
+  conditionType: 'verdict_is' | 'domain_contains' | 'country_is' | 'pulse_count_gte' | 'kind_is'
   value: string
   severity: 'critical' | 'high' | 'medium' | 'low'
   action: 'alert' | 'log'
   source: string
+  mitreTactic: string | null
+  mitreTechnique: string | null
+  windowSeconds: number
+  groupBy: string
+  threshold: number
   hits: number
   falsePositives: number
   lastHitAt: string | null
@@ -248,6 +261,20 @@ export interface IncidentNote {
   body: string
 }
 
+export interface IncidentTimelineEvent {
+  time: string
+  type: string
+  message: string
+  actor: string
+}
+
+export interface IncidentEntity {
+  type: string
+  value: string
+  label: string | null
+  count: number
+}
+
 export interface IncidentRecord {
   id: string
   title: string
@@ -256,8 +283,90 @@ export interface IncidentRecord {
   assignee: string | null
   summary: string
   notes: IncidentNote[]
+  timeline: IncidentTimelineEvent[]
+  entities: IncidentEntity[]
+  alertIds: string[]
   createdAt: string
   updatedAt: string
+}
+
+export interface DataSourceRecord {
+  id: string
+  name: string
+  type: string
+  enabled: boolean
+  status: 'healthy' | 'degraded' | 'offline' | 'inactive'
+  lastEventAt: string | null
+  lastError: string | null
+  eventsTotal: number
+  events24h: number
+  events1h: number
+  eps: number
+  createdAt: string
+}
+
+export interface DataSourceList {
+  items: DataSourceRecord[]
+  total: number
+}
+
+export interface AlertEntity {
+  type: string
+  value: string
+  label: string | null
+}
+
+export interface AlertRecord {
+  id: string
+  ruleId: string | null
+  incidentId: string | null
+  title: string
+  description: string
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info'
+  status: 'new' | 'acknowledged' | 'assigned' | 'snoozed' | 'resolved'
+  assignee: string | null
+  snoozedUntil: string | null
+  slaDueAt: string | null
+  eventCount: number
+  firstSeenAt: string
+  lastSeenAt: string
+  entities: AlertEntity[]
+  eventIds: string[]
+  isFalsePositive: boolean
+  resolvedAt: string | null
+  resolutionNote: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AlertCounts {
+  open: number
+  new: number
+  acknowledged: number
+  assigned: number
+  snoozed: number
+  resolved24h: number
+  overdue: number
+}
+
+export interface ResponseAction {
+  id: string
+  incidentId: string | null
+  alertId: string | null
+  kind: 'isolate' | 'block' | 'disable' | 'snapshot' | 'notify'
+  targetType: string
+  target: string
+  params: Record<string, unknown>
+  status: 'pending' | 'running' | 'succeeded' | 'failed' | 'manual'
+  result: Record<string, unknown> | null
+  error: string | null
+  executedAt: string | null
+  createdAt: string
+}
+
+export interface ResponseActionList {
+  items: ResponseAction[]
+  total: number
 }
 
 export interface LogRecord {
@@ -396,6 +505,8 @@ export interface SearchResults {
   query: string
   events: SecurityEventRow[]
   devices: MonitoredDevice[]
+  breakdown: Record<string, number>
+  tookMs: number
 }
 
 export interface PcapAnalysis {

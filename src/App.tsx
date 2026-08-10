@@ -22,6 +22,7 @@ import Devices from './views/dashboard/Devices'
 import LogCollection from './views/dashboard/LogCollection'
 import LiveCapture from './views/dashboard/LiveCapture'
 import PcapUpload from './views/dashboard/PcapUpload'
+import SourceHealth from './views/dashboard/SourceHealth'
 import ThreatDetection from './views/dashboard/ThreatDetection'
 import AiLogAnalyzer from './views/dashboard/AiLogAnalyzer'
 import IocScanner from './views/dashboard/IocScanner'
@@ -29,6 +30,7 @@ import Alerts from './views/dashboard/Alerts'
 import Timeline from './views/dashboard/Timeline'
 import SearchModule from './views/dashboard/SearchModule'
 import Incidents from './views/dashboard/Incidents'
+import ResponseActions from './views/dashboard/ResponseActions'
 import Assistant from './views/dashboard/Assistant'
 import Reports from './views/dashboard/Reports'
 import ThreatIntel from './views/dashboard/ThreatIntel'
@@ -91,6 +93,7 @@ export default function App() {
           <Route path="devices/:id" element={<DeviceDetail />} />
           <Route path="logs" element={<LogCollection />} />
           <Route path="logs/parsers" element={<LogParsers />} />
+          <Route path="sources" element={<SourceHealth />} />
           <Route path="capture" element={<LiveCapture />} />
           <Route path="pcap" element={<PcapUpload />} />
           <Route path="detection" element={<ThreatDetection />} />
@@ -101,6 +104,7 @@ export default function App() {
           <Route path="timeline" element={<Timeline />} />
           <Route path="search" element={<SearchModule />} />
           <Route path="incidents" element={<Incidents />} />
+          <Route path="actions" element={<ResponseActions />} />
           <Route path="runbooks" element={<Runbooks />} />
           <Route path="assistant" element={<Assistant />} />
           <Route path="reports" element={<Reports />} />

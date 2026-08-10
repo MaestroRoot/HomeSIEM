@@ -112,6 +112,18 @@ export const modules: AppModule[] = [
     bullets: ['Windows · Linux · macOS agents', 'Firewall, web server & cloud logs', 'Live ingest health monitoring'],
   },
   {
+    id: 'sources',
+    no: 7,
+    name: 'Data Source Health',
+    path: '/dashboard/sources',
+    icon: Activity,
+    category: 'Collection',
+    tagline: 'Is every feed still alive?',
+    description:
+      'Every channel feeding events into your SIEM — sensors, NextDNS, log uploads — with live health: healthy, degraded or offline, plus event rates per source.',
+    bullets: ['Live per-source health', 'Events 24h / 1h and rate', 'Auto-registration on ingest'],
+  },
+  {
     id: 'pcap',
     no: 6,
     name: 'Packet Inspector',
@@ -208,6 +220,18 @@ export const modules: AppModule[] = [
     description:
       'Create incidents, assign severity, attach evidence, keep investigation notes, track status through containment and eradication, and record the final resolution.',
     bullets: ['Severity, status & assignee tracking', 'Evidence and note trail', 'Alert-to-incident correlation'],
+  },
+  {
+    id: 'actions',
+    no: 15,
+    name: 'Response Actions',
+    path: '/dashboard/actions',
+    icon: Workflow,
+    category: 'Response',
+    tagline: 'Contain, block, isolate, notify',
+    description:
+      'SOAR-lite response actions raised from alerts and incidents — isolate a host, block an indicator, disable an account, take a snapshot or notify a channel — with status tracking.',
+    bullets: ['isolate · block · disable · snapshot · notify', 'Raised from an alert or incident', 'Status: pending → running → done'],
   },
   {
     id: 'assistant',
