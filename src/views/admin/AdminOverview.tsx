@@ -30,7 +30,10 @@ interface AdminStats {
 
 const PLAN_ORDER = ['Free', 'Home', 'Pro', 'Business']
 
-const fmt = (n: number) => n.toLocaleString()
+const fmt = (n: number | undefined | null) => {
+  if (n === undefined || n === null) return '—'
+  return typeof n === 'number' ? n.toLocaleString() : String(n)
+}
 
 export default function AdminOverview() {
   const [stats, setStats] = useState<AdminStats | null>(null)

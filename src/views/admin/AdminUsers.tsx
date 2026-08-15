@@ -49,6 +49,11 @@ const statusTone: Record<string, 'green' | 'amber' | 'red' | 'slate'> = {
   cancelled: 'slate',
 }
 
+const fmt = (n: number | undefined | null) => {
+  if (n === undefined || n === null) return '—'
+  return typeof n === 'number' ? n.toLocaleString() : String(n)
+}
+
 const PAGE_SIZE = 25
 
 function initials(name: string) {
