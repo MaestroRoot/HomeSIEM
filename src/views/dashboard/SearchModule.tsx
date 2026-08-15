@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BarChart3, Clock, Loader2, Search as SearchIcon, Star, X } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api } from '@/lib/api'
 import type { SearchResults, SecurityEventRow, Verdict } from '@/lib/types'
 
@@ -178,11 +179,16 @@ export default function SearchModule() {
 
       {results && (
         <>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCardMini label="Events" value={results.events.length} />
-            <StatCardMini label="Devices" value={results.devices.length} />
-            <StatCardMini label="Took" value={`${results.tookMs} ms`} />
-          </div>
+          <SortableCardGrid
+            pageKey="search.kpis"
+            cols="sm:grid-cols-3"
+            maxCols={3}
+            cards={[
+              { id: 'events', label: 'Events', node: <StatCardMini label="Events" value={results.events.length} /> },
+              { id: 'devices', label: 'Devices', node: <StatCardMini label="Devices" value={results.devices.length} /> },
+              { id: 'took', label: 'Took', node: <StatCardMini label="Took" value={`${results.tookMs} ms`} /> },
+            ]}
+          />
 
           {breakdown.length > 0 && (
             <SectionCard title="Breakdown" description="Matches by verdict / severity, top categories first">

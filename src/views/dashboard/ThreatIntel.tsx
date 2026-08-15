@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Loader2, ShieldAlert } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { FeedsResponse, StatsOverview, Verdict } from '@/lib/types'
@@ -46,11 +47,16 @@ export default function ThreatIntel() {
     <div className="space-y-6">
       <PageHeader icon={ShieldAlert} title="Threat Intelligence" subtitle="The feeds enriching every event, and the indicators they have flagged on your network." />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Active feeds" value={feeds?.feeds.filter((f) => f.status === 'active').length ?? 0} sub="Enriching events" icon={ShieldAlert} tone="green" />
-        <StatCard label="Flagged on your network" value={feeds?.flaggedSeen ?? 0} sub="Suspicious or worse" icon={ShieldAlert} tone="red" />
-        <StatCard label="Unique indicators" value={stats?.suspicious.length ?? 0} sub="Distinct flagged" icon={ShieldAlert} tone="amber" />
-      </div>
+      <SortableCardGrid
+        pageKey="intel.kpis"
+        cols="sm:grid-cols-3"
+        maxCols={3}
+        cards={[
+          { id: 'feeds', label: 'Active feeds', node: <StatCard label="Active feeds" value={feeds?.feeds.filter((f) => f.status === 'active').length ?? 0} sub="Enriching events" icon={ShieldAlert} tone="green" /> },
+          { id: 'flagged', label: 'Flagged on your network', node: <StatCard label="Flagged on your network" value={feeds?.flaggedSeen ?? 0} sub="Suspicious or worse" icon={ShieldAlert} tone="red" /> },
+          { id: 'indicators', label: 'Unique indicators', node: <StatCard label="Unique indicators" value={stats?.suspicious.length ?? 0} sub="Distinct flagged" icon={ShieldAlert} tone="amber" /> },
+        ]}
+      />
 
       {loading && !feeds ? (
         <div className="grid place-items-center py-20 text-slate-400"><Loader2 size={22} className="animate-spin" /></div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, Loader2, Play, Plus, RefreshCw, Workflow, XCircle } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import type { AlertRecord, IncidentRecord, ResponseAction, ResponseActionList } from '@/lib/types'
 
@@ -107,11 +108,16 @@ export default function ResponseActions() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="In flight" value={counts.pending} sub="Pending or running" icon={Play} tone="amber" />
-        <StatCard label="Succeeded" value={counts.succeeded} sub="Completed" icon={CheckCircle2} tone="green" />
-        <StatCard label="Failed" value={counts.failed} sub="Needs attention" icon={XCircle} tone="red" />
-      </div>
+      <SortableCardGrid
+        pageKey="actions.kpis"
+        cols="sm:grid-cols-3"
+        maxCols={3}
+        cards={[
+          { id: 'inflight', label: 'In flight', node: <StatCard label="In flight" value={counts.pending} sub="Pending or running" icon={Play} tone="amber" /> },
+          { id: 'succeeded', label: 'Succeeded', node: <StatCard label="Succeeded" value={counts.succeeded} sub="Completed" icon={CheckCircle2} tone="green" /> },
+          { id: 'failed', label: 'Failed', node: <StatCard label="Failed" value={counts.failed} sub="Needs attention" icon={XCircle} tone="red" /> },
+        ]}
+      />
 
       {error && <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 

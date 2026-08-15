@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Brain, Download, Loader2, UploadCloud } from 'lucide-react'
 import { AiPanel, PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import type { AiText, PcapAnalysis, Verdict } from '@/lib/types'
 
@@ -102,12 +103,17 @@ export default function AiPacketAnalysis() {
 
       {analysis && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Packets" value={analysis.packetsRead.toLocaleString()} sub={analysis.truncated ? 'truncated' : 'whole file'} icon={Brain} />
-            <StatCard label="DNS queries" value={analysis.dnsQueries.length} sub={`${analysis.uniqueDomains} domains`} icon={Brain} />
-            <StatCard label="External IPs" value={analysis.uniqueExternalIps} sub="Destinations" icon={Brain} />
-            <StatCard label="Flagged" value={flagged.length} sub="Suspicious or worse" icon={Brain} tone="red" />
-          </div>
+          <SortableCardGrid
+            pageKey="aipacket.kpis"
+            cols="sm:grid-cols-2 lg:grid-cols-4"
+            maxCols={4}
+            cards={[
+              { id: 'packets', label: 'Packets', node: <StatCard label="Packets" value={analysis.packetsRead.toLocaleString()} sub={analysis.truncated ? 'truncated' : 'whole file'} icon={Brain} /> },
+              { id: 'dns', label: 'DNS queries', node: <StatCard label="DNS queries" value={analysis.dnsQueries.length} sub={`${analysis.uniqueDomains} domains`} icon={Brain} /> },
+              { id: 'ips', label: 'External IPs', node: <StatCard label="External IPs" value={analysis.uniqueExternalIps} sub="Destinations" icon={Brain} /> },
+              { id: 'flagged', label: 'Flagged', node: <StatCard label="Flagged" value={flagged.length} sub="Suspicious or worse" icon={Brain} tone="red" /> },
+            ]}
+          />
 
           <SectionCard title="Findings" description={`${analysis.findings.length} detections`} right={<button type="button" className="btn-ghost btn-sm" onClick={() => exportJson(analysis, ai)}><Download size={13} /> Export JSON</button>}>
             <TableWrap>

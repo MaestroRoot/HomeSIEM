@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { HardDrive, Loader2, Microscope, Play, Radio } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, ForensicSnapshotRecord } from '@/lib/types'
@@ -111,12 +112,17 @@ export default function Forensics() {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-4">
-            <StatCard label="Host" value={snap.host} sub="Snapshot" icon={Microscope} />
-            <StatCard label="Processes" value={snap.processes.length} sub="Running" icon={Microscope} />
-            <StatCard label="Connections" value={snap.connections.length} sub="Active" icon={Microscope} />
-            <StatCard label="Agents" value={agents.length} sub="Connected" icon={Radio} />
-          </div>
+          <SortableCardGrid
+            pageKey="forensics.kpis"
+            cols="sm:grid-cols-4"
+            maxCols={4}
+            cards={[
+              { id: 'host', label: 'Host', node: <StatCard label="Host" value={snap.host} sub="Snapshot" icon={Microscope} /> },
+              { id: 'processes', label: 'Processes', node: <StatCard label="Processes" value={snap.processes.length} sub="Running" icon={Microscope} /> },
+              { id: 'connections', label: 'Connections', node: <StatCard label="Connections" value={snap.connections.length} sub="Active" icon={Microscope} /> },
+              { id: 'agents', label: 'Agents', node: <StatCard label="Agents" value={agents.length} sub="Connected" icon={Radio} /> },
+            ]}
+          />
 
           <SectionCard title="Network connections">
             <TableWrap>

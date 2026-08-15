@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom'
 import { ChevronDown, ChevronRight, Loader2, Play, Radio, Repeat, ScrollText, Square } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, CollectionStream, LogList } from '@/lib/types'
@@ -108,11 +109,16 @@ export default function LogCollection() {
     <div className="space-y-6">
       <PageHeader icon={ScrollText} title="Log Collection" subtitle="Logs shipped by the log agent from your hosts, refreshing every 6 seconds." actions={<Link to="/dashboard/logs/parsers" className="btn-soft btn-sm">Manage parsers</Link>} />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Log entries" value={data?.total ?? 0} sub="Total collected" icon={ScrollText} />
-        <StatCard label="Sources" value={data?.sources.length ?? 0} sub="Reporting" icon={ScrollText} tone="green" />
-        <StatCard label="Errors" value={data?.items.filter((l) => l.level === 'error').length ?? 0} sub="In recent logs" icon={ScrollText} tone="red" />
-      </div>
+      <SortableCardGrid
+        pageKey="logs.kpis"
+        cols="sm:grid-cols-3"
+        maxCols={3}
+        cards={[
+          { id: 'entries', label: 'Log entries', node: <StatCard label="Log entries" value={data?.total ?? 0} sub="Total collected" icon={ScrollText} /> },
+          { id: 'sources', label: 'Sources', node: <StatCard label="Sources" value={data?.sources.length ?? 0} sub="Reporting" icon={ScrollText} tone="green" /> },
+          { id: 'errors', label: 'Errors', node: <StatCard label="Errors" value={data?.items.filter((l) => l.level === 'error').length ?? 0} sub="In recent logs" icon={ScrollText} tone="red" /> },
+        ]}
+      />
 
       {agents.length > 0 && (
         <SectionCard title="Collect logs from a host" description="Collect once, or turn on Auto to keep pulling recent logs continuously, it runs on the server and keeps going even if you close this page, until you press Stop.">

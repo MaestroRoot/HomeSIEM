@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom'
 import { Loader2, Play, Radio, Repeat, Square, Waves } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, CollectionStream, SecurityEventRow, Verdict } from '@/lib/types'
@@ -109,11 +110,16 @@ export default function LiveCapture() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Flows" value={flows.length} sub="Recent captures" icon={Waves} />
-        <StatCard label="Flagged" value={flows.filter((f) => f.verdict === 'malicious' || f.verdict === 'suspicious').length} sub="Suspicious or worse" icon={Waves} tone="red" />
-        <StatCard label="Destinations" value={new Set(flows.map((f) => f.dstIp)).size} sub="Distinct external IPs" icon={Waves} />
-      </div>
+      <SortableCardGrid
+        pageKey="livecapture.kpis"
+        cols="sm:grid-cols-3"
+        maxCols={3}
+        cards={[
+          { id: 'flows', label: 'Flows', node: <StatCard label="Flows" value={flows.length} sub="Recent captures" icon={Waves} /> },
+          { id: 'flagged', label: 'Flagged', node: <StatCard label="Flagged" value={flows.filter((f) => f.verdict === 'malicious' || f.verdict === 'suspicious').length} sub="Suspicious or worse" icon={Waves} tone="red" /> },
+          { id: 'destinations', label: 'Destinations', node: <StatCard label="Destinations" value={new Set(flows.map((f) => f.dstIp)).size} sub="Distinct external IPs" icon={Waves} /> },
+        ]}
+      />
 
       {agents.length > 0 && (
         <SectionCard title="Capture from a host" description="Capture once (a single 30-second run), or turn on Auto to keep capturing continuously, it runs on the server and keeps going even if you close this page, until you press Stop. Enter the interface number from tshark -D on that host.">

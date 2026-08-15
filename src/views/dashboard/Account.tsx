@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Copy, Eye, EyeOff, KeyRound, Loader2, Phone, Plus, ShieldCheck, Trash2, UserCog } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { useAuth } from '@/context/AuthContext'
 import type { Role } from '@/context/AuthContext'
 import { api } from '@/lib/api'
@@ -155,12 +156,17 @@ export default function Account() {
         subtitle="Multi-factor authentication, role management and API keys for your own collectors and integrations."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Account role" value={user?.role ?? 'owner'} sub="Full platform access" icon={UserCog} />
-        <StatCard label="MFA" value={user?.mfaEnabled ? 'Enabled' : 'Disabled'} sub="TOTP authenticator" icon={ShieldCheck} tone={user?.mfaEnabled ? 'green' : 'red'} />
-        <StatCard label="API keys" value={keys.length} sub="Active credentials" icon={KeyRound} />
-        <StatCard label="Members" value={memberCount ?? '…'} sub="With platform access" icon={UserCog} tone="slate" />
-      </div>
+      <SortableCardGrid
+        pageKey="account.kpis"
+        cols="sm:grid-cols-2 lg:grid-cols-4"
+        maxCols={4}
+        cards={[
+          { id: 'role', label: 'Account role', node: <StatCard label="Account role" value={user?.role ?? 'owner'} sub="Full platform access" icon={UserCog} /> },
+          { id: 'mfa', label: 'MFA', node: <StatCard label="MFA" value={user?.mfaEnabled ? 'Enabled' : 'Disabled'} sub="TOTP authenticator" icon={ShieldCheck} tone={user?.mfaEnabled ? 'green' : 'red'} /> },
+          { id: 'api-keys', label: 'API keys', node: <StatCard label="API keys" value={keys.length} sub="Active credentials" icon={KeyRound} /> },
+          { id: 'members', label: 'Members', node: <StatCard label="Members" value={memberCount ?? '…'} sub="With platform access" icon={UserCog} tone="slate" /> },
+        ]}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <SectionCard title="Profile" description="Your account details">

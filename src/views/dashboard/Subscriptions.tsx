@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { useAuth } from '@/context/AuthContext'
 import type { Plan } from '@/context/AuthContext'
 import { useSubscription } from '@/context/SubscriptionContext'
@@ -205,53 +206,82 @@ export default function Subscriptions() {
       )}
 
       {current && currentSpec && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Current plan"
-            value={currentSpec.label}
-            sub={
-              current.status === 'trialing'
-                ? 'Free trial'
-                : current.priceTzs === 0
-                  ? 'Free'
-                  : `TSh ${formatTzs(current.priceTzs)} / month`
-            }
-            icon={Sparkles}
-          />
-          <StatCard
-            label="Status"
-            value={STATUS_TEXT[current.status] ?? current.status}
-            sub={STATUS_SUB[current.status] ?? 'Your plan is live'}
-            icon={CalendarClock}
-            tone={
-              current.status === 'active'
-                ? 'green'
-                : current.status === 'trialing'
-                  ? 'blue'
-                  : 'amber'
-            }
-          />
-          <StatCard
-            label="Modules"
-            value={`${currentSpec.modules.length} / ${totalModules}`}
-            sub="Unlocked on this plan"
-            icon={Check}
-            tone="blue"
-          />
-          <StatCard
-            label={current.status === 'trialing' ? 'Trial ends' : 'Renews'}
-            value={formatDate(current.trialEndsAt ?? current.currentPeriodEnd)}
-            sub={
-              current.status === 'trialing'
-                ? 'Then it drops to Free'
-                : current.autoRenew
-                  ? 'Renews automatically'
-                  : 'Does not renew'
-            }
-            icon={Receipt}
-            tone="slate"
-          />
-        </div>
+        <SortableCardGrid
+          pageKey="subscriptions.kpis"
+          cols="sm:grid-cols-2 lg:grid-cols-4"
+          maxCols={4}
+          cards={[
+            {
+              id: 'plan',
+              label: 'Current plan',
+              node: (
+                <StatCard
+                  label="Current plan"
+                  value={currentSpec.label}
+                  sub={
+                    current.status === 'trialing'
+                      ? 'Free trial'
+                      : current.priceTzs === 0
+                        ? 'Free'
+                        : `TSh ${formatTzs(current.priceTzs)} / month`
+                  }
+                  icon={Sparkles}
+                />
+              ),
+            },
+            {
+              id: 'status',
+              label: 'Status',
+              node: (
+                <StatCard
+                  label="Status"
+                  value={STATUS_TEXT[current.status] ?? current.status}
+                  sub={STATUS_SUB[current.status] ?? 'Your plan is live'}
+                  icon={CalendarClock}
+                  tone={
+                    current.status === 'active'
+                      ? 'green'
+                      : current.status === 'trialing'
+                        ? 'blue'
+                        : 'amber'
+                  }
+                />
+              ),
+            },
+            {
+              id: 'modules',
+              label: 'Modules',
+              node: (
+                <StatCard
+                  label="Modules"
+                  value={`${currentSpec.modules.length} / ${totalModules}`}
+                  sub="Unlocked on this plan"
+                  icon={Check}
+                  tone="blue"
+                />
+              ),
+            },
+            {
+              id: 'renews',
+              label: current.status === 'trialing' ? 'Trial ends' : 'Renews',
+              node: (
+                <StatCard
+                  label={current.status === 'trialing' ? 'Trial ends' : 'Renews'}
+                  value={formatDate(current.trialEndsAt ?? current.currentPeriodEnd)}
+                  sub={
+                    current.status === 'trialing'
+                      ? 'Then it drops to Free'
+                      : current.autoRenew
+                        ? 'Renews automatically'
+                        : 'Does not renew'
+                  }
+                  icon={Receipt}
+                  tone="slate"
+                />
+              ),
+            },
+          ]}
+        />
       )}
 
       {state?.pendingPayment && (

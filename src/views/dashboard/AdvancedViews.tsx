@@ -29,6 +29,7 @@ import {
   TableWrap,
   cx,
 } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type {
@@ -202,12 +203,17 @@ export function Compliance() {
         ))}
       </div>
       <p className="text-xs text-slate-500">{FRAMEWORK_TAGLINES[framework]}</p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Controls" value={controls.length} sub={framework} icon={ClipboardCheck} />
-        <StatCard label="Passing" value={passing} sub={`${pct}%`} icon={ShieldCheck} tone="green" />
-        <StatCard label="Needs attention" value={controls.length - passing} sub="Failing controls" icon={ClipboardCheck} tone="red" />
-        <StatCard label="Posture" value={`${pct}%`} sub="Overall compliance" icon={Activity} tone={pct >= 80 ? 'green' : pct >= 50 ? 'amber' : 'red'} />
-      </div>
+      <SortableCardGrid
+        pageKey="compliance.kpis"
+        cols="sm:grid-cols-2 lg:grid-cols-4"
+        maxCols={4}
+        cards={[
+          { id: 'controls', label: 'Controls', node: <StatCard label="Controls" value={controls.length} sub={framework} icon={ClipboardCheck} /> },
+          { id: 'passing', label: 'Passing', node: <StatCard label="Passing" value={passing} sub={`${pct}%`} icon={ShieldCheck} tone="green" /> },
+          { id: 'attention', label: 'Needs attention', node: <StatCard label="Needs attention" value={controls.length - passing} sub="Failing controls" icon={ClipboardCheck} tone="red" /> },
+          { id: 'posture', label: 'Posture', node: <StatCard label="Posture" value={`${pct}%`} sub="Overall compliance" icon={Activity} tone={pct >= 80 ? 'green' : pct >= 50 ? 'amber' : 'red'} /> },
+        ]}
+      />
       {loading && controls.length === 0 ? (
         <SectionCard><div className="grid place-items-center py-10 text-slate-400"><Loader2 size={20} className="animate-spin" /></div></SectionCard>
       ) : (
@@ -268,29 +274,42 @@ export function Coverage() {
   return (
     <div className="space-y-6">
       <PageHeader icon={ShieldCheck} title="Detection Coverage" subtitle="Which MITRE ATT&CK tactics your active rules cover, and where the gaps are." />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Tactics covered" value={`${covered}/${TACTICS.length}`} sub="Have at least one rule" icon={ShieldCheck} tone="green" />
-        <StatCard label="Rules" value={rules.length} sub="Total detections" icon={ShieldCheck} />
-        <StatCard label="Enabled" value={rules.filter((r) => r.enabled).length} sub="Currently active" icon={ShieldCheck} tone="green" />
-        <StatCard label="Gaps" value={TACTICS.length - covered} sub="Tactics with no rule" icon={ShieldCheck} tone="red" />
-      </div>
+      <SortableCardGrid
+        pageKey="coverage.kpis"
+        cols="sm:grid-cols-2 lg:grid-cols-4"
+        maxCols={4}
+        cards={[
+          { id: 'covered', label: 'Tactics covered', node: <StatCard label="Tactics covered" value={`${covered}/${TACTICS.length}`} sub="Have at least one rule" icon={ShieldCheck} tone="green" /> },
+          { id: 'rules', label: 'Rules', node: <StatCard label="Rules" value={rules.length} sub="Total detections" icon={ShieldCheck} /> },
+          { id: 'enabled', label: 'Enabled', node: <StatCard label="Enabled" value={rules.filter((r) => r.enabled).length} sub="Currently active" icon={ShieldCheck} tone="green" /> },
+          { id: 'gaps', label: 'Gaps', node: <StatCard label="Gaps" value={TACTICS.length - covered} sub="Tactics with no rule" icon={ShieldCheck} tone="red" /> },
+        ]}
+      />
       <SectionCard title="Coverage heatmap" description="Tactics with more rules and hits are darker">
         {loading ? (
           <div className="grid place-items-center py-10 text-slate-400"><Loader2 size={20} className="animate-spin" /></div>
         ) : (
-          <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
-            {TACTICS.map((t) => {
+          <SortableCardGrid
+            pageKey="coverage.heatmap"
+            cols="sm:grid-cols-2 lg:grid-cols-4"
+            maxCols={4}
+            className="p-5"
+            cards={TACTICS.map((t) => {
               const d = byTactic.get(t)!
               const has = d.rules > 0
-              return (
-                <div key={t} className={cx('rounded-xl border p-4', has ? 'border-brand-300 bg-brand-50' : 'border-slate-200 bg-slate-50')}>
-                  <p className="text-sm font-bold text-slate-900">{t}</p>
-                  <p className="mt-1 text-xs text-slate-500">{d.rules} rule(s) · {d.hits} hits</p>
-                  <div className="mt-2"><StatusPill tone={has ? 'green' : 'slate'}>{has ? 'covered' : 'gap'}</StatusPill></div>
-                </div>
-              )
+              return {
+                id: `tactic-${t}`,
+                label: t,
+                node: (
+                  <div className={cx('rounded-xl border p-4', has ? 'border-brand-300 bg-brand-50' : 'border-slate-200 bg-slate-50')}>
+                    <p className="text-sm font-bold text-slate-900">{t}</p>
+                    <p className="mt-1 text-xs text-slate-500">{d.rules} rule(s) · {d.hits} hits</p>
+                    <div className="mt-2"><StatusPill tone={has ? 'green' : 'slate'}>{has ? 'covered' : 'gap'}</StatusPill></div>
+                  </div>
+                ),
+              }
             })}
-          </div>
+          />
         )}
       </SectionCard>
       <SectionCard><div className="px-5 py-4 text-sm text-slate-600">Rules are mapped to tactics by their condition type. Add rules in the <Link to="/dashboard/rules" className="font-semibold text-brand-700">Rule Engine</Link> to close gaps.</div></SectionCard>
@@ -312,11 +331,16 @@ export function GeoMap() {
   return (
     <div className="space-y-6">
       <PageHeader icon={Globe2} title="Geographic Threat Map" subtitle="Where the external destinations your devices contacted are located (GeoIP context, not attribution)." />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Countries" value={stats?.byCountry.length ?? 0} sub="Observed" icon={Globe2} />
-        <StatCard label="External IPs" value={stats?.uniqueExternalIps ?? 0} sub="Destinations" icon={Globe2} />
-        <StatCard label="Flagged" value={stats?.flagged ?? 0} sub="Suspicious or worse" icon={Globe2} tone="red" />
-      </div>
+      <SortableCardGrid
+        pageKey="geomap.kpis"
+        cols="sm:grid-cols-3"
+        maxCols={3}
+        cards={[
+          { id: 'countries', label: 'Countries', node: <StatCard label="Countries" value={stats?.byCountry.length ?? 0} sub="Observed" icon={Globe2} /> },
+          { id: 'ips', label: 'External IPs', node: <StatCard label="External IPs" value={stats?.uniqueExternalIps ?? 0} sub="Destinations" icon={Globe2} /> },
+          { id: 'flagged', label: 'Flagged', node: <StatCard label="Flagged" value={stats?.flagged ?? 0} sub="Suspicious or worse" icon={Globe2} tone="red" /> },
+        ]}
+      />
       <SectionCard title="Destinations by country" description="Ranked by number of events">
         {loading ? (
           <div className="grid place-items-center py-10 text-slate-400"><Loader2 size={20} className="animate-spin" /></div>
@@ -389,11 +413,16 @@ export function NetworkGraph() {
   return (
     <div className="space-y-6">
       <PageHeader icon={Network} title="Network Graph" subtitle="Who talked to what. Red links are flagged by threat intelligence." />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Nodes" value={graph.nodes.length} sub="Devices + destinations" icon={Network} />
-        <StatCard label="Connections" value={graph.edges.length} sub="Distinct paths" icon={Network} />
-        <StatCard label="Flagged paths" value={graph.edges.filter((e) => e.flagged).length} sub="Suspicious or worse" icon={Network} tone="red" />
-      </div>
+      <SortableCardGrid
+        pageKey="networkgraph.kpis"
+        cols="sm:grid-cols-3"
+        maxCols={3}
+        cards={[
+          { id: 'nodes', label: 'Nodes', node: <StatCard label="Nodes" value={graph.nodes.length} sub="Devices + destinations" icon={Network} /> },
+          { id: 'connections', label: 'Connections', node: <StatCard label="Connections" value={graph.edges.length} sub="Distinct paths" icon={Network} /> },
+          { id: 'flagged', label: 'Flagged paths', node: <StatCard label="Flagged paths" value={graph.edges.filter((e) => e.flagged).length} sub="Suspicious or worse" icon={Network} tone="red" /> },
+        ]}
+      />
       <SectionCard title="Communication topology" description="Newest 40 connections">
         {loading && events.length === 0 ? (
           <div className="grid place-items-center py-10 text-slate-400"><Loader2 size={20} className="animate-spin" /></div>
@@ -728,12 +757,17 @@ export function DeviceDetail() {
         <SectionCard><EmptyState icon={Server} title="Device not found" message="This device is not in your workspace." /></SectionCard>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Risk score" value={device.riskScore} sub={device.riskScore >= 70 ? 'high' : device.riskScore >= 30 ? 'medium' : 'low'} icon={Activity} tone={device.riskScore >= 70 ? 'red' : device.riskScore >= 30 ? 'amber' : 'green'} />
-            <StatCard label="Events" value={device.eventsCount} sub="Total observed" icon={Activity} />
-            <StatCard label="Flagged" value={flagged} sub="Suspicious or worse" icon={Activity} tone="red" />
-            <StatCard label="Last seen" value={device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleTimeString() : '—'} sub={device.status} icon={Server} />
-          </div>
+          <SortableCardGrid
+            pageKey="devicedetail.kpis"
+            cols="sm:grid-cols-2 lg:grid-cols-4"
+            maxCols={4}
+            cards={[
+              { id: 'risk', label: 'Risk score', node: <StatCard label="Risk score" value={device.riskScore} sub={device.riskScore >= 70 ? 'high' : device.riskScore >= 30 ? 'medium' : 'low'} icon={Activity} tone={device.riskScore >= 70 ? 'red' : device.riskScore >= 30 ? 'amber' : 'green'} /> },
+              { id: 'events', label: 'Events', node: <StatCard label="Events" value={device.eventsCount} sub="Total observed" icon={Activity} /> },
+              { id: 'flagged', label: 'Flagged', node: <StatCard label="Flagged" value={flagged} sub="Suspicious or worse" icon={Activity} tone="red" /> },
+              { id: 'last-seen', label: 'Last seen', node: <StatCard label="Last seen" value={device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleTimeString() : '—'} sub={device.status} icon={Server} /> },
+            ]}
+          />
 
           <SectionCard title="Identity" description="Give this device a friendly name and type" right={<Pencil size={16} className="text-slate-400" />}>
             {device.discovered && (

@@ -75,7 +75,7 @@ export default function SortableCardGrid({
     <div className="space-y-4">
       <EditToolbar hasHidden={cfg.hidden.length > 0} onReset={reset} />
       <DndContainer
-        items={visible}
+        items={ordered}
         cols={cols}
         className={className}
         maxCols={maxCols}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Check, Copy, Cpu, Download, KeyRound, Loader2, Monitor, Radio, ShieldCheck, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
 import NextDnsCard from '@/components/dashboard/NextDnsCard'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import { API_BASE_URL } from '@/lib/env'
@@ -103,11 +104,16 @@ export default function Agents() {
     <div className="space-y-6">
       <PageHeader icon={Cpu} title="Agents" subtitle="Set up a host once. The agent enrolls and stays running, then you trigger scans, forensics, captures and log collection by clicking, no commands to repeat." />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Agents" value={agents.length} sub="Enrolled hosts" icon={Cpu} />
-        <StatCard label="Online" value={agents.filter(agentOnline).length} sub="Reporting now" icon={Radio} tone="green" />
-        <StatCard label="Capabilities" value="6" sub="scan · forensics · logs · software · discovery" icon={ShieldCheck} />
-      </div>
+      <SortableCardGrid
+        pageKey="agents.kpis"
+        cols="sm:grid-cols-3"
+        maxCols={3}
+        cards={[
+          { id: 'agents', label: 'Agents', node: <StatCard label="Agents" value={agents.length} sub="Enrolled hosts" icon={Cpu} /> },
+          { id: 'online', label: 'Online', node: <StatCard label="Online" value={agents.filter(agentOnline).length} sub="Reporting now" icon={Radio} tone="green" /> },
+          { id: 'capabilities', label: 'Capabilities', node: <StatCard label="Capabilities" value="6" sub="scan · forensics · logs · software · discovery" icon={ShieldCheck} /> },
+        ]}
+      />
 
       {/* Step 0: download desktop app */}
       <SectionCard

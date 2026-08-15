@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Fingerprint, Globe2, Layers, Loader2, Search, UploadCloud } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import type { IntelResult, Verdict } from '@/lib/types'
 
@@ -90,29 +91,17 @@ export default function IocScanner() {
         subtitle="Check an IP, domain, URL or file hash against AlienVault OTX threat intelligence, IPs are also located with MaxMind GeoIP."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Lookups this session" value={history.length} sub="IPs, domains, URLs, hashes" icon={Search} />
-        <StatCard
-          label="Flagged"
-          value={history.filter((h) => h.verdict === 'malicious' || h.verdict === 'suspicious').length}
-          sub="Suspicious or worse"
-          icon={Fingerprint}
-          tone="red"
-        />
-        <StatCard
-          label="On allow-lists"
-          value={history.filter((h) => h.verdict === 'clean').length}
-          sub="Known-legitimate"
-          icon={Fingerprint}
-          tone="green"
-        />
-        <StatCard
-          label="Located"
-          value={history.filter((h) => h.geo && !h.geo.isPrivate).length}
-          sub="With a country / ASN"
-          icon={Globe2}
-        />
-      </div>
+      <SortableCardGrid
+        pageKey="ioc.kpis"
+        cols="sm:grid-cols-2 lg:grid-cols-4"
+        maxCols={4}
+        cards={[
+          { id: 'lookups', label: 'Lookups this session', node: <StatCard label="Lookups this session" value={history.length} sub="IPs, domains, URLs, hashes" icon={Search} /> },
+          { id: 'flagged', label: 'Flagged', node: <StatCard label="Flagged" value={history.filter((h) => h.verdict === 'malicious' || h.verdict === 'suspicious').length} sub="Suspicious or worse" icon={Fingerprint} tone="red" /> },
+          { id: 'clean', label: 'On allow-lists', node: <StatCard label="On allow-lists" value={history.filter((h) => h.verdict === 'clean').length} sub="Known-legitimate" icon={Fingerprint} tone="green" /> },
+          { id: 'located', label: 'Located', node: <StatCard label="Located" value={history.filter((h) => h.geo && !h.geo.isPrivate).length} sub="With a country / ASN" icon={Globe2} /> },
+        ]}
+      />
 
       <SectionCard title="Scan an indicator" description="Paste an IP, domain, URL, SHA256 or MD5, the type is detected automatically">
         <form onSubmit={scan} className="flex flex-col gap-3 p-5 sm:flex-row">

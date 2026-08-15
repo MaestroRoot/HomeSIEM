@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { AlertTriangle, Brain, CheckCircle2, FileUp, Globe2, Loader2, UploadCloud } from 'lucide-react'
 import { AiPanel, PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import type { AiText, PcapAnalysis, Verdict } from '@/lib/types'
 
@@ -179,12 +180,17 @@ export default function PcapUpload() {
 
       {result && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Packets read" value={result.packetsRead.toLocaleString()} sub={result.truncated ? 'truncated at limit' : 'whole capture'} icon={FileUp} />
-            <StatCard label="DNS lookups" value={result.dnsQueries.length} sub={`${result.uniqueDomains} unique domains`} icon={Globe2} />
-            <StatCard label="External IPs" value={result.uniqueExternalIps} sub="Contacted destinations" icon={Globe2} />
-            <StatCard label="Flagged" value={flagged.length} sub="Suspicious or worse" icon={AlertTriangle} tone="red" />
-          </div>
+          <SortableCardGrid
+            pageKey="pcapupload.kpis"
+            cols="sm:grid-cols-2 lg:grid-cols-4"
+            maxCols={4}
+            cards={[
+              { id: 'packets', label: 'Packets read', node: <StatCard label="Packets read" value={result.packetsRead.toLocaleString()} sub={result.truncated ? 'truncated at limit' : 'whole capture'} icon={FileUp} /> },
+              { id: 'dns', label: 'DNS lookups', node: <StatCard label="DNS lookups" value={result.dnsQueries.length} sub={`${result.uniqueDomains} unique domains`} icon={Globe2} /> },
+              { id: 'ips', label: 'External IPs', node: <StatCard label="External IPs" value={result.uniqueExternalIps} sub="Contacted destinations" icon={Globe2} /> },
+              { id: 'flagged', label: 'Flagged', node: <StatCard label="Flagged" value={flagged.length} sub="Suspicious or worse" icon={AlertTriangle} tone="red" /> },
+            ]}
+          />
 
           <SectionCard title="Findings" description={`${result.findings.length} enriched detections from this capture`}>
             <TableWrap>
