@@ -125,8 +125,10 @@ export default function DashboardLayout() {
     <ThemeProvider>
       <SubscriptionProvider>
         <CollectorProvider>
-          <TitleUpdater />
-          <DashboardShell navOpen={navOpen} setNavOpen={setNavOpen} />
+          <CustomizeProvider>
+            <TitleUpdater />
+            <DashboardShell navOpen={navOpen} setNavOpen={setNavOpen} />
+          </CustomizeProvider>
         </CollectorProvider>
       </SubscriptionProvider>
     </ThemeProvider>
@@ -168,9 +170,7 @@ function DashboardShell({
         <main className="px-4 py-6 sm:px-6 lg:px-8">
           <PageErrorBoundary>
             <PlanGate>
-              <CustomizeProvider>
-                <Outlet />
-              </CustomizeProvider>
+              <Outlet />
             </PlanGate>
           </PageErrorBoundary>
         </main>
