@@ -13,7 +13,7 @@ import {
 import { ApiError, api } from '@/lib/api'
 import { auth, firebaseErrorMessage } from '@/lib/firebase'
 
-export type Role = 'owner' | 'analyst' | 'viewer'
+export type Role = 'owner' | 'analyst' | 'viewer' | 'admin'
 export type Plan = 'Free' | 'Home' | 'Pro' | 'Business'
 
 /** Inalingana na `UserRead` ya backend (app/schemas/user.py). */

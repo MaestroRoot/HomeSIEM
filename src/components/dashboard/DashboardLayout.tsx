@@ -5,6 +5,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import PlanGate from './PlanGate'
+import IdleLogout from './IdleLogout'
 import { useAuth } from '@/context/AuthContext'
 import { SubscriptionProvider } from '@/context/SubscriptionContext'
 import { CollectorProvider } from '@/context/CollectorContext'
@@ -180,6 +181,7 @@ function DashboardShell({
       <WizardBoundary>
         <Onboarding open={onboard} onClose={() => { localStorage.setItem('homesiem-onboarded', '1'); setOnboard(false) }} />
       </WizardBoundary>
+      <IdleLogout />
     </div>
   )
 }

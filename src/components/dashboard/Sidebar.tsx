@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import { ChevronDown, Lock, X } from 'lucide-react'
+import { ChevronDown, Lock, ShieldCheck, X } from 'lucide-react'
 
 import Logo from '../Logo'
 import { navGroups, moduleCategories } from '@/lib/modules'
@@ -69,6 +69,29 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         </div>
 
         <nav className="min-h-0 flex-1 overflow-y-auto px-2 py-1.5">
+          {user?.role === 'admin' && (
+            <div className="mb-2">
+              <p className="px-2 pb-0.5 pt-1.5 text-[9px] font-bold uppercase tracking-[.12em] text-slate-400">
+                Platform admin
+              </p>
+              <NavLink
+                to="/admin"
+                end
+                onClick={onClose}
+                className={({ isActive }) =>
+                  cx(
+                    'group flex items-center gap-2 rounded-md border px-2 py-1 text-[12px] font-semibold transition-colors',
+                    isActive
+                      ? 'border-brand-200 bg-brand-600 text-white shadow-sm'
+                      : 'border-slate-200 text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700',
+                  )
+                }
+              >
+                <ShieldCheck size={14} className="text-brand-500 group-hover:text-brand-600" />
+                Admin console
+              </NavLink>
+            </div>
+          )}
           {navGroups.map((group) => {
             if (group.items.length === 0) return null
             const collapsed_ = isCollapsed(group.category)

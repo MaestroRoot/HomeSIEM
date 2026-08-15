@@ -16,6 +16,9 @@ import { Terms, Privacy, Cookie } from './views/Legal'
 import CookieConsent from './components/CookieConsent'
 
 import DashboardLayout from './components/dashboard/DashboardLayout'
+import AdminLayout from './components/admin/AdminLayout'
+import AdminOverview from './views/admin/AdminOverview'
+import AdminUsers from './views/admin/AdminUsers'
 import Overview from './views/dashboard/Overview'
 import Agents from './views/dashboard/Agents'
 import Devices from './views/dashboard/Devices'
@@ -124,6 +127,11 @@ export default function App() {
           <Route path="coverage" element={<Coverage />} />
           <Route path="account" element={<Account />} />
           <Route path="subscriptions" element={<Subscriptions />} />
+        </Route>
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminOverview />} />
+          <Route path="users" element={<AdminUsers />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

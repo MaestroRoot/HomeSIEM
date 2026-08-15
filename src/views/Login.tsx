@@ -4,6 +4,12 @@ import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from 'luci
 import AuthLayout from '@/components/auth/AuthLayout'
 import GoogleButton, { AuthDivider } from '@/components/auth/GoogleButton'
 import { useAuth } from '@/context/AuthContext'
+import type { User } from '@/context/AuthContext'
+
+/** Admins wanaenda kwenye admin console, wengine kwenye dashboard yao. */
+function afterLoginPath(user: User) {
+  return user.role === 'admin' ? '/admin' : '/dashboard'
+}
 
 export default function Login() {
   const { login, loginWithGoogle, verifyMfa, mfaRequired, clearMfa } = useAuth()
@@ -36,8 +42,8 @@ export default function Login() {
     setError('')
     setGoogleBusy(true)
     try {
-      await loginWithGoogle()
-      navigate('/dashboard', { replace: true })
+      const user = await loginWithGoogle()
+      navigate(afterLoginPath(user), { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign in failed.')
       setGoogleBusy(false)
@@ -55,7 +61,7 @@ export default function Login() {
     try {
       const result = await login(email, password)
       if (!result.mfaRequired) {
-        navigate('/dashboard', { replace: true })
+        navigate(afterLoginPath(result.user), { replace: true })
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed.')
@@ -70,8 +76,8 @@ export default function Login() {
 
     setMfaBusy(true)
     try {
-      await verifyMfa(mfaCode)
-      navigate('/dashboard', { replace: true })
+      const verified = await verifyMfa(mfaCode)
+      navigate(afterLoginPath(verified), { replace: true })
     } catch (err) {
       setMfaError(err instanceof Error ? err.message : 'Verification failed.')
       setMfaBusy(false)
