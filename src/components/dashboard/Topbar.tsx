@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Bell, ChevronDown, Command, CreditCard, HelpCircle, LogOut, Menu, Moon, Search, Settings, ShieldCheck, Sun } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
-import { useCollector } from '@/context/CollectorContext'
 import { useTheme } from '@/context/ThemeContext'
 import { alerts } from '@/lib/data'
 import { SeverityBadge, cx } from '../ui'
@@ -10,7 +9,6 @@ import TrialBadge from './TrialBadge'
 
 export default function Topbar({ onMenu, onCommand, onHelp }: { onMenu: () => void; onCommand: () => void; onHelp: () => void }) {
   const { user, logout } = useAuth()
-  const { live, connected } = useCollector()
   const { theme, toggle } = useTheme()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -59,26 +57,6 @@ export default function Topbar({ onMenu, onCommand, onHelp }: { onMenu: () => vo
       </form>
 
       <div className="ml-auto flex items-center gap-2" ref={wrap}>
-        {live ? (
-          <span className="hidden items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 md:inline-flex">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 animate-pulse-ring" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-            </span>
-            Collector live
-          </span>
-        ) : connected ? (
-          <span className="hidden items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-700 md:inline-flex">
-            <span className="h-2 w-2 rounded-full bg-amber-400" />
-            Collector idle
-          </span>
-        ) : (
-          <span className="hidden items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-500 md:inline-flex">
-            <span className="h-2 w-2 rounded-full bg-slate-400" />
-            No collectors
-          </span>
-        )}
-
         <TrialBadge />
 
         <button type="button" onClick={onCommand} className="grid h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 sm:hidden" aria-label="Open command palette" title="Command palette">

@@ -1,13 +1,13 @@
 import { Component, useEffect, useState } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { AlertTriangle, RefreshCw, Radio } from 'lucide-react'
+import { AlertTriangle, RefreshCw } from 'lucide-react'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import PlanGate from './PlanGate'
 import { useAuth } from '@/context/AuthContext'
 import { SubscriptionProvider } from '@/context/SubscriptionContext'
-import { CollectorProvider, useCollector } from '@/context/CollectorContext'
+import { CollectorProvider } from '@/context/CollectorContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { CommandPalette, KeyboardHelp } from './CommandPalette'
 import Onboarding from './Onboarding'
@@ -140,7 +140,6 @@ function DashboardShell({
   navOpen: boolean
   setNavOpen: (open: boolean) => void
 }) {
-  const { connected } = useCollector()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
   const [onboard, setOnboard] = useState(() => !localStorage.getItem('homesiem-onboarded'))
@@ -167,19 +166,6 @@ function DashboardShell({
       <div className="lg:pl-[248px]">
         <Topbar onMenu={() => setNavOpen(true)} onCommand={() => setPaletteOpen(true)} onHelp={() => setHelpOpen(true)} />
         <main className="px-4 py-6 sm:px-6 lg:px-8">
-          {!connected && (
-            <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
-              <Radio size={17} className="mt-0.5 shrink-0 text-amber-600" />
-              <div className="text-sm text-amber-900">
-                <p className="font-semibold">No collector is connected yet.</p>
-                <p className="mt-0.5 text-amber-800">
-                  Every screen below is empty on purpose. Nothing here is simulated, so counts and
-                  charts stay at zero until a device starts shipping logs and packets. Connect a
-                  sensor on the Devices page to begin.
-                </p>
-              </div>
-            </div>
-          )}
           <PageErrorBoundary>
             <PlanGate>
               <Outlet />

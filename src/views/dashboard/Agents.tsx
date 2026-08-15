@@ -17,7 +17,7 @@ const API_ABS = API_BASE.startsWith('http') ? API_BASE : `${DOWNLOAD_BASE}${API_
 //: Releases za desktop agent (HomeSIEM.exe). Pakia faili zilizobuild na
 //: uzipaste kwenye GitHub Releases ili links hizi zifanye kazi.
 const RELEASES = 'https://github.com/MaestroRoot/homesiem-agent/releases/latest/download'
-const AGENT_VERSION = '1.0.11'
+const AGENT_VERSION = '1.0.12'
 
 const AGENT_DOWNLOADS = [
   { platform: 'Windows', icon: Monitor, ext: 'x64-setup.exe', desc: 'Windows 11+ (64-bit, DNS tab needs Win11+)' },
@@ -112,7 +112,7 @@ export default function Agents() {
       {/* Step 0: download desktop app */}
       <SectionCard
         title="Download HomeSIEM Agent"
-        description={`Desktop app (v${AGENT_VERSION}) for Windows, macOS and Linux. Install, paste your token, pick features, and it runs in the background automatically.`}
+        description={`Desktop app (v${AGENT_VERSION}) for Windows, macOS and Linux. Install it, enter your sign-in email, and the app emails you a code to link this PC — no tokens to manage.`}
         right={<span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-700">New</span>}
       >
         <div className="p-5">
@@ -137,13 +137,21 @@ export default function Agents() {
             ))}
           </div>
           <p className="mt-3 text-xs text-slate-500">
-            No Python needed — the app is a standalone installer. After installing, open it, paste the token from step 1 below, choose features (DNS, Forensics, Event Logs, Network, Software), and it will start with Windows.
+            No Python needed — the app is a standalone installer. After installing, open it and enter the email you sign in to HomeSIEM with. The app emails you a one-time code; the host links to that account automatically. Pick features (DNS, Forensics, Event Logs, Network, Software) and it will start with Windows.
           </p>
         </div>
       </SectionCard>
 
-      {/* Step 1: token */}
-      <SectionCard title="1. Generate a token" description="Create a token, copy it, then paste it into the desktop app (or the Python command in step 2)." right={<KeyRound size={18} className="text-slate-400" />}>
+      {/* Step 1: desktop app */}
+      <SectionCard title="1. Use the desktop app" description="Open HomeSIEM Agent and enter your sign-in email. A one-time code is emailed to you — the host links to your account instantly." right={<Monitor size={18} className="text-slate-400" />}>
+        <div className="space-y-3 p-5">
+          <p className="text-sm text-slate-600"><span className="font-semibold">Recommended:</span> Download the app above, install it, open it, and enter the email you use to sign in. The app emails you a verification code. Choose the features you want and it will start with Windows automatically. No token required.</p>
+          <p className="text-sm text-slate-600">This host will appear below under <span className="font-semibold">Enrolled hosts</span> once the code is verified.</p>
+        </div>
+      </SectionCard>
+
+      {/* Step 2: Python agent (advanced, uses a token) */}
+      <SectionCard title="2. Python agent (advanced)" description="Prefer the command line or a headless server? Generate a token and run the Python agent on any host (including Linux)." right={<KeyRound size={18} className="text-slate-400" />}>
         <form onSubmit={generate} className="flex flex-col gap-3 p-5 sm:flex-row">
           <input className="input flex-1" placeholder="Sensor name, e.g. Home Pi" value={label} onChange={(e) => setLabel(e.target.value)} />
           <button type="submit" className="btn-primary sm:w-48" disabled={busy}>
@@ -153,18 +161,13 @@ export default function Agents() {
         {error && <div className="px-5 pb-4 text-sm text-red-700">{error}</div>}
         {token && (
           <div className="mx-5 mb-5 rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
-            <p className="text-sm font-semibold text-emerald-800">✓ Token for “{token.label}” created. Copy it and paste it into the app:</p>
+            <p className="text-sm font-semibold text-emerald-800">✓ Token for “{token.label}” created. Copy it and use it in the command below:</p>
             <div className="mt-3"><CopyBlock text={tok} /></div>
-            <p className="mt-2 text-xs text-emerald-700">The token is shown only once. The same token is also used by the Python command in step 2 below.</p>
+            <p className="mt-2 text-xs text-emerald-700">The token is shown only once.</p>
           </div>
         )}
-      </SectionCard>
-
-      {/* Step 2: install agent */}
-      <SectionCard title="2. Use the desktop app" description="Run HomeSIEM Agent. It enrolls once and keeps running in the background.">
-        <div className="space-y-3 p-5">
-          <p className="text-sm text-slate-600"><span className="font-semibold">Recommended:</span> Download the app above, install it, open it, and paste your token. Choose the features you want and it will start with Windows automatically.</p>
-          <p className="text-sm text-slate-600">For advanced users (or Linux servers), you can use the Python agent instead. You need <span className="font-semibold">Python 3</span> (python.org → “Add to PATH”). Then, for forensics, one dependency:</p>
+        <div className="space-y-3 p-5 pt-0">
+          <p className="text-sm text-slate-600">You need <span className="font-semibold">Python 3</span> (python.org → “Add to PATH”). Then, for forensics, one dependency:</p>
           <CopyBlock text={`python -m pip install psutil`} />
           <p className="text-sm text-slate-600">Open <span className="font-semibold">PowerShell</span> (as administrator for full access) and paste this, it downloads the agent and runs it:</p>
           <CopyBlock text={agentCmd} />
@@ -188,7 +191,7 @@ export default function Agents() {
         {loading && agents.length === 0 ? (
           <div className="grid place-items-center py-8 text-slate-400"><Loader2 size={18} className="animate-spin" /></div>
         ) : agents.length === 0 ? (
-          <div className="px-5 py-8 text-center text-sm text-slate-400">No agents yet. Generate a token and run the command above on a host.</div>
+          <div className="px-5 py-8 text-center text-sm text-slate-400">No agents yet. Install the desktop app and sign in with your email, or run the Python agent on a host.</div>
         ) : (
           <TableWrap>
             <table className="table-base">
