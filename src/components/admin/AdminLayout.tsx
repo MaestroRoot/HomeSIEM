@@ -11,21 +11,10 @@ const adminNav = [
   { to: '/admin/users', end: false, label: 'Users', icon: Users },
 ]
 
-export default function AdminLayout() {
-  const { user, loading, logout } = useAuth()
+function AdminLayoutInner() {
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-
-  if (loading) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
-          <span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
-          <p className="text-sm text-slate-500">Loading admin…</p>
-        </div>
-      </div>
-    )
-  }
 
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
   if (user.role !== 'admin') return <Navigate to="/dashboard" replace />
@@ -113,4 +102,21 @@ export default function AdminLayout() {
       <IdleLogout />
     </div>
   )
+}
+
+export default function AdminLayout() {
+  const { loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <span className="h-8 w-8 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+          <p className="text-sm text-slate-500">Loading admin…</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <AdminLayoutInner />
 }
