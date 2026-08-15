@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Calendar, Loader2, Network, Package, Play, ScanSearch, Search, Trash2 } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, DiscoverySchedule, MonitoredDevice, SoftwarePackage, StatsOverview } from '@/lib/types'
@@ -119,12 +120,12 @@ export default function Inventory() {
     <div className="space-y-6">
       <PageHeader icon={Network} title="Network Inventory" subtitle="Every device seen on your network, the software they run, and every external destination they reached." />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Devices" value={devices.length} sub="Discovered + registered" icon={Network} />
-        <StatCard label="Software packages" value={software.length} sub={`${swByHost.length} host(s)`} icon={Package} />
-        <StatCard label="External IPs" value={stats?.uniqueExternalIps ?? 0} sub="Distinct destinations" icon={Network} />
-        <StatCard label="Domains" value={stats?.uniqueDomains ?? 0} sub="Looked up" icon={Network} />
-      </div>
+      <SortableCardGrid pageKey="inventory" cols="sm:grid-cols-2 lg:grid-cols-4" cards={[
+        { id: 'devices', label: 'Devices', node: <StatCard label="Devices" value={devices.length} sub="Discovered + registered" icon={Network} /> },
+        { id: 'software', label: 'Software packages', node: <StatCard label="Software packages" value={software.length} sub={`${swByHost.length} host(s)`} icon={Package} /> },
+        { id: 'extips', label: 'External IPs', node: <StatCard label="External IPs" value={stats?.uniqueExternalIps ?? 0} sub="Distinct destinations" icon={Network} /> },
+        { id: 'domains', label: 'Domains', node: <StatCard label="Domains" value={stats?.uniqueDomains ?? 0} sub="Looked up" icon={Network} /> },
+      ]} />
 
       {/* --- Discovery --- */}
       <SectionCard title="Network discovery" description="Actively sweep a subnet to find devices, and schedule it to run on its own">

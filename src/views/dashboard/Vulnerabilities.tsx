@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, Radio, ShieldCheck, Play } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, SeverityBadge, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AgentJob, AgentRecord, Severity, VulnRecord } from '@/lib/types'
@@ -65,12 +66,12 @@ export default function Vulnerabilities() {
     <div className="space-y-6">
       <PageHeader icon={ShieldCheck} title="Vulnerability Scanner" subtitle="Pick a connected host and scan it, or scan any IP on its network. No commands to re-run, the agent does it." />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Findings" value={vulns.length} sub="Across all scans" icon={ShieldCheck} />
-        <StatCard label="Critical / High" value={bySev('critical') + bySev('high')} sub="Fix first" icon={ShieldCheck} tone="red" />
-        <StatCard label="Medium" value={bySev('medium')} sub="Review" icon={ShieldCheck} tone="amber" />
-        <StatCard label="Agents" value={agents.length} sub="Can run scans" icon={Radio} />
-      </div>
+      <SortableCardGrid pageKey="vulnerabilities" cols="sm:grid-cols-2 lg:grid-cols-4" cards={[
+        { id: 'findings', label: 'Findings', node: <StatCard label="Findings" value={vulns.length} sub="Across all scans" icon={ShieldCheck} /> },
+        { id: 'crit', label: 'Critical / High', node: <StatCard label="Critical / High" value={bySev('critical') + bySev('high')} sub="Fix first" icon={ShieldCheck} tone="red" /> },
+        { id: 'medium', label: 'Medium', node: <StatCard label="Medium" value={bySev('medium')} sub="Review" icon={ShieldCheck} tone="amber" /> },
+        { id: 'agents', label: 'Agents', node: <StatCard label="Agents" value={agents.length} sub="Can run scans" icon={Radio} /> },
+      ]} />
 
       {error && <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 

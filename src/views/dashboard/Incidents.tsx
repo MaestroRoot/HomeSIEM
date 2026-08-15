@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Boxes, Loader2, Plus, Send, Unlink, X } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, SeverityBadge, StatCard, StatusPill, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import type { AlertRecord, IncidentRecord } from '@/lib/types'
 
@@ -113,11 +114,11 @@ export default function Incidents() {
         </>}
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Open" value={open} sub="Not yet closed" icon={Boxes} tone="red" />
-        <StatCard label="Closed" value={items.length - open} sub="Resolved" icon={Boxes} tone="green" />
-        <StatCard label="Total" value={items.length} sub="All incidents" icon={Boxes} />
-      </div>
+      <SortableCardGrid pageKey="incidents" cols="sm:grid-cols-3" maxCols={3} cards={[
+        { id: 'open', label: 'Open', node: <StatCard label="Open" value={open} sub="Not yet closed" icon={Boxes} tone="red" /> },
+        { id: 'closed', label: 'Closed', node: <StatCard label="Closed" value={items.length - open} sub="Resolved" icon={Boxes} tone="green" /> },
+        { id: 'total', label: 'Total', node: <StatCard label="Total" value={items.length} sub="All incidents" icon={Boxes} /> },
+      ]} />
 
       {error && <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 

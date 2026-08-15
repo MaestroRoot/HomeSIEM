@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FlaskConical, Library, Loader2, Plus, ShieldX, Trash2, Wrench, X } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import type { DetectionRule, SecurityEventRow } from '@/lib/types'
 
@@ -164,12 +165,12 @@ export default function RuleEngine() {
         </>}
       />
 
-      <div className="grid gap-4 sm:grid-cols-4">
-        <StatCard label="Rules" value={rules.length} sub="Total defined" icon={Wrench} />
-        <StatCard label="Enabled" value={rules.filter((r) => r.enabled).length} sub="Currently active" icon={Wrench} tone="green" />
-        <StatCard label="Correlation" value={rules.filter((r) => r.windowSeconds > 0).length} sub="Window + threshold rules" icon={Wrench} tone="amber" />
-        <StatCard label="Total hits" value={rules.reduce((n, r) => n + r.hits, 0)} sub="Across all rules" icon={Wrench} tone="red" />
-      </div>
+      <SortableCardGrid pageKey="ruleengine" cols="sm:grid-cols-4" maxCols={4} cards={[
+        { id: 'rules', label: 'Rules', node: <StatCard label="Rules" value={rules.length} sub="Total defined" icon={Wrench} /> },
+        { id: 'enabled', label: 'Enabled', node: <StatCard label="Enabled" value={rules.filter((r) => r.enabled).length} sub="Currently active" icon={Wrench} tone="green" /> },
+        { id: 'correlation', label: 'Correlation', node: <StatCard label="Correlation" value={rules.filter((r) => r.windowSeconds > 0).length} sub="Window + threshold rules" icon={Wrench} tone="amber" /> },
+        { id: 'hits', label: 'Total hits', node: <StatCard label="Total hits" value={rules.reduce((n, r) => n + r.hits, 0)} sub="Across all rules" icon={Wrench} tone="red" /> },
+      ]} />
 
       {show && (
         <SectionCard title="New rule" description="Simple: IF condition THEN act · Correlation: IF condition matches N times within W seconds grouped by field">

@@ -1,6 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { AlertCircle, CalendarClock, CheckCircle2, Download, FileText, Loader2, Send, Trash2 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api } from '@/lib/api'
 import type { MonitoredDevice, ReportSchedule, SecurityEventRow, SecurityScore, StatsOverview, VulnRecord } from '@/lib/types'
 
@@ -311,11 +312,11 @@ export default function Reports() {
         )}
       </SectionCard>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Templates" value={templates.length} sub="Ready to build" icon={FileText} />
-        <StatCard label="Download" value="PDF/CSV/HTML" sub="Export formats" icon={Download} tone="green" />
-        <StatCard label="Scheduled" value={schedules.length} sub="Auto-delivered" icon={CalendarClock} />
-      </div>
+      <SortableCardGrid pageKey="reports" cols="sm:grid-cols-3" maxCols={3} cards={[
+        { id: 'templates', label: 'Templates', node: <StatCard label="Templates" value={templates.length} sub="Ready to build" icon={FileText} /> },
+        { id: 'download', label: 'Download', node: <StatCard label="Download" value="PDF/CSV/HTML" sub="Export formats" icon={Download} tone="green" /> },
+        { id: 'scheduled', label: 'Scheduled', node: <StatCard label="Scheduled" value={schedules.length} sub="Auto-delivered" icon={CalendarClock} /> },
+      ]} />
     </div>
   )
 }

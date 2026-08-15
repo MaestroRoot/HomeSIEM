@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext'
 import { SubscriptionProvider } from '@/context/SubscriptionContext'
 import { CollectorProvider } from '@/context/CollectorContext'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { CustomizeProvider } from '@/context/CustomizeContext'
 import { CommandPalette, KeyboardHelp } from './CommandPalette'
 import Onboarding from './Onboarding'
 
@@ -46,7 +47,6 @@ const routeTitles: Record<string, string> = {
   '/dashboard/attack-chain': 'Attack Chain',
   '/dashboard/geo-map': 'Geo Threat Map',
   '/dashboard/coverage': 'Detection Coverage',
-  '/dashboard/custom-dashboards': 'Custom Dashboards',
   '/dashboard/account': 'Account',
   '/dashboard/subscriptions': 'Subscriptions',
 }
@@ -168,7 +168,9 @@ function DashboardShell({
         <main className="px-4 py-6 sm:px-6 lg:px-8">
           <PageErrorBoundary>
             <PlanGate>
-              <Outlet />
+              <CustomizeProvider>
+                <Outlet />
+              </CustomizeProvider>
             </PlanGate>
           </PageErrorBoundary>
         </main>

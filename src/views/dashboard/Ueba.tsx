@@ -11,6 +11,7 @@ import {
   UserCheck,
 } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 
@@ -191,35 +192,12 @@ export default function Ueba() {
       {/* Overview Tab */}
       {tab === 'overview' && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              label="Total users"
-              value={overview?.totalUsers ?? 0}
-              sub="With owner assigned"
-              icon={UserCheck}
-            />
-            <StatCard
-              label="Monitored"
-              value={overview?.monitoredUsers ?? 0}
-              sub="Baselines ready"
-              icon={Shield}
-              tone="green"
-            />
-            <StatCard
-              label="Anomalies today"
-              value={overview?.totalAnomaliesToday ?? 0}
-              sub="Across all users"
-              icon={AlertTriangle}
-              tone="amber"
-            />
-            <StatCard
-              label="Critical users"
-              value={overview?.criticalUsers ?? 0}
-              sub="Risk score 70+"
-              icon={Activity}
-              tone="red"
-            />
-          </div>
+          <SortableCardGrid pageKey="ueba.overview" cols="sm:grid-cols-2 lg:grid-cols-4" cards={[
+            { id: 'users', label: 'Total users', node: <StatCard label="Total users" value={overview?.totalUsers ?? 0} sub="With owner assigned" icon={UserCheck} /> },
+            { id: 'monitored', label: 'Monitored', node: <StatCard label="Monitored" value={overview?.monitoredUsers ?? 0} sub="Baselines ready" icon={Shield} tone="green" /> },
+            { id: 'anomalies', label: 'Anomalies today', node: <StatCard label="Anomalies today" value={overview?.totalAnomaliesToday ?? 0} sub="Across all users" icon={AlertTriangle} tone="amber" /> },
+            { id: 'critical', label: 'Critical users', node: <StatCard label="Critical users" value={overview?.criticalUsers ?? 0} sub="Risk score 70+" icon={Activity} tone="red" /> },
+          ]} />
 
           {criticalUsers.length > 0 && (
             <SectionCard title="Critical Users" description="Users with risk score 70 or higher">

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, AlertTriangle, Database, Gauge, Loader2, Radio, ShieldCheck } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, EmptyState } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { DataSourceList, DataSourceRecord } from '@/lib/types'
@@ -70,12 +71,12 @@ export default function SourceHealth() {
         subtitle="Every channel feeding events into your SIEM — sensors, NextDNS, uploads — and whether it is alive, degraded or silent."
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Data sources" value={sources.length} sub="Registered with the platform" icon={Database} />
-        <StatCard label="Healthy" value={totals.healthy} sub="Reporting within 5 minutes" icon={ShieldCheck} tone="green" />
-        <StatCard label="Degraded" value={totals.degraded} sub="Quiet for up to an hour" icon={Gauge} tone="amber" />
-        <StatCard label="Event rate" value={`${totals.eps.toFixed(2)}/s`} sub="Across all sources, last hour" icon={Radio} tone="blue" />
-      </div>
+      <SortableCardGrid pageKey="sourcehealth" cols="sm:grid-cols-2 lg:grid-cols-4" cards={[
+        { id: 'sources', label: 'Data sources', node: <StatCard label="Data sources" value={sources.length} sub="Registered with the platform" icon={Database} /> },
+        { id: 'healthy', label: 'Healthy', node: <StatCard label="Healthy" value={totals.healthy} sub="Reporting within 5 minutes" icon={ShieldCheck} tone="green" /> },
+        { id: 'degraded', label: 'Degraded', node: <StatCard label="Degraded" value={totals.degraded} sub="Quiet for up to an hour" icon={Gauge} tone="amber" /> },
+        { id: 'rate', label: 'Event rate', node: <StatCard label="Event rate" value={`${totals.eps.toFixed(2)}/s`} sub="Across all sources, last hour" icon={Radio} tone="blue" /> },
+      ]} />
 
       <SectionCard
         title="Sources"

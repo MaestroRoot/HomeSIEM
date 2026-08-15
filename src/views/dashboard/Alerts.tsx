@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, CheckCheck, FolderPlus, Loader2, Siren, Timer } from 'lucide-react'
 import { EmptyState, PageHeader, SectionCard, SeverityBadge, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { AlertCounts, AlertRecord } from '@/lib/types'
@@ -119,12 +120,12 @@ export default function Alerts() {
         actions={<Link to="/dashboard/alerts/integrations" className="btn-soft btn-sm">Integrations</Link>}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Open" value={counts?.open ?? openCount} sub="new + acknowledged + assigned + snoozed" icon={Siren} tone="red" />
-        <StatCard label="Overdue" value={counts?.overdue ?? overdue} sub="Past the SLA due time" icon={Timer} tone="amber" />
-        <StatCard label="Resolved 24h" value={counts?.resolved24h ?? 0} sub="Closed in the last day" icon={CheckCheck} tone="green" />
-        <StatCard label="Active rules" value={counts?.new ?? 0} sub="Brand-new detections" icon={AlertTriangle} tone="blue" />
-      </div>
+      <SortableCardGrid pageKey="alerts" cols="sm:grid-cols-2 lg:grid-cols-4" cards={[
+        { id: 'open', label: 'Open', node: <StatCard label="Open" value={counts?.open ?? openCount} sub="new + acknowledged + assigned + snoozed" icon={Siren} tone="red" /> },
+        { id: 'overdue', label: 'Overdue', node: <StatCard label="Overdue" value={counts?.overdue ?? overdue} sub="Past the SLA due time" icon={Timer} tone="amber" /> },
+        { id: 'resolved', label: 'Resolved 24h', node: <StatCard label="Resolved 24h" value={counts?.resolved24h ?? 0} sub="Closed in the last day" icon={CheckCheck} tone="green" /> },
+        { id: 'rules', label: 'Active rules', node: <StatCard label="Active rules" value={counts?.new ?? 0} sub="Brand-new detections" icon={AlertTriangle} tone="blue" /> },
+      ]} />
 
       {error && <div className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</div>}
 

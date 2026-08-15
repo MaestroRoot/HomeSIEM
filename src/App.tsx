@@ -45,7 +45,6 @@ import SecurityScore from './views/dashboard/SecurityScore'
 import Ueba from './views/dashboard/Ueba'
 import Account from './views/dashboard/Account'
 import Subscriptions from './views/dashboard/Subscriptions'
-import Dashboards from './views/dashboard/Dashboards'
 import {
   AlertIntegrations,
   AttackChain,
@@ -123,7 +122,6 @@ export default function App() {
           <Route path="score" element={<SecurityScore />} />
           <Route path="compliance" element={<Compliance />} />
           <Route path="coverage" element={<Coverage />} />
-          <Route path="custom-dashboards" element={<Dashboards />} />
           <Route path="account" element={<Account />} />
           <Route path="subscriptions" element={<Subscriptions />} />
         </Route>

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Bell, ChevronDown, Command, CreditCard, HelpCircle, LogOut, Menu, Moon, Search, Settings, ShieldCheck, Sun } from 'lucide-react'
+import { Bell, ChevronDown, Command, CreditCard, HelpCircle, LayoutGrid, LogOut, Menu, Moon, Search, Settings, ShieldCheck, Sun } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import { useCustomize } from '@/context/CustomizeContext'
 import { alerts } from '@/lib/data'
 import { SeverityBadge, cx } from '../ui'
 import TrialBadge from './TrialBadge'
@@ -10,6 +11,7 @@ import TrialBadge from './TrialBadge'
 export default function Topbar({ onMenu, onCommand, onHelp }: { onMenu: () => void; onCommand: () => void; onHelp: () => void }) {
   const { user, logout } = useAuth()
   const { theme, toggle } = useTheme()
+  const { editing, setEditing } = useCustomize()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [bellOpen, setBellOpen] = useState(false)
@@ -65,6 +67,20 @@ export default function Topbar({ onMenu, onCommand, onHelp }: { onMenu: () => vo
 
         <button type="button" onClick={onHelp} className="hidden h-9 w-9 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 md:grid" aria-label="Keyboard shortcuts" title="Keyboard shortcuts">
           <HelpCircle size={17} />
+        </button>
+
+        {/* customize layout */}
+        <button
+          type="button"
+          onClick={() => setEditing(!editing)}
+          className={cx(
+            'grid h-9 w-9 place-items-center rounded-lg border',
+            editing ? 'border-brand-500 bg-brand-50 text-brand-700 ring-1 ring-brand-200' : 'border-slate-200 text-slate-600 hover:bg-slate-50',
+          )}
+          aria-label="Customize layout"
+          title={editing ? 'Exit customize mode' : 'Customize layout'}
+        >
+          <LayoutGrid size={17} />
         </button>
 
         {/* theme toggle */}

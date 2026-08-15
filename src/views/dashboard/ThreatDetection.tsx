@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Loader2, Radar, Wrench } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { DetectionRule } from '@/lib/types'
@@ -61,12 +62,12 @@ export default function ThreatDetection() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active detectors" value={enabled.length} sub={`${rules.length} defined`} icon={Radar} tone="green" />
-        <StatCard label="Total hits" value={totalHits} sub="All time" icon={Radar} tone="amber" />
-        <StatCard label="False positives" value={totalFp} sub={totalHits ? `${Math.round((totalFp / totalHits) * 100)}% FP rate` : 'none marked'} icon={Radar} tone="slate" />
-        <StatCard label="Firing" value={firing} sub="Rules with at least one hit" icon={Radar} tone="red" />
-      </div>
+      <SortableCardGrid pageKey="threatdetection" cols="sm:grid-cols-2 lg:grid-cols-4" cards={[
+        { id: 'active', label: 'Active detectors', node: <StatCard label="Active detectors" value={enabled.length} sub={`${rules.length} defined`} icon={Radar} tone="green" /> },
+        { id: 'hits', label: 'Total hits', node: <StatCard label="Total hits" value={totalHits} sub="All time" icon={Radar} tone="amber" /> },
+        { id: 'fp', label: 'False positives', node: <StatCard label="False positives" value={totalFp} sub={totalHits ? `${Math.round((totalFp / totalHits) * 100)}% FP rate` : 'none marked'} icon={Radar} tone="slate" /> },
+        { id: 'firing', label: 'Firing', node: <StatCard label="Firing" value={firing} sub="Rules with at least one hit" icon={Radar} tone="red" /> },
+      ]} />
 
       <SectionCard title="Detectors" description={loading ? 'loading…' : `${rules.length} rules`}>
         <TableWrap>

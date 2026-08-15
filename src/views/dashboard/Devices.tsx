@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api, ApiError } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { MonitoredDevice, SecurityEventRow, Verdict } from '@/lib/types'
@@ -168,12 +169,12 @@ export default function Devices() {
         }
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total devices" value={devices.length} sub="Registered and discovered" icon={Laptop} />
-        <StatCard label="Active" value={counts.active} sub="Currently tracked" icon={Server} tone="green" />
-        <StatCard label="Auto-discovered" value={counts.discovered} sub="Seen by a sensor, unnamed" icon={Radio} tone="amber" />
-        <StatCard label="High risk" value={counts.atRisk} sub="Risk score 70+" icon={Cpu} tone="red" />
-      </div>
+      <SortableCardGrid pageKey="devices" cols="sm:grid-cols-2 lg:grid-cols-4" cards={[
+        { id: 'total', label: 'Total devices', node: <StatCard label="Total devices" value={devices.length} sub="Registered and discovered" icon={Laptop} /> },
+        { id: 'active', label: 'Active', node: <StatCard label="Active" value={counts.active} sub="Currently tracked" icon={Server} tone="green" /> },
+        { id: 'discovered', label: 'Auto-discovered', node: <StatCard label="Auto-discovered" value={counts.discovered} sub="Seen by a sensor, unnamed" icon={Radio} tone="amber" /> },
+        { id: 'risk', label: 'High risk', node: <StatCard label="High risk" value={counts.atRisk} sub="Risk score 70+" icon={Cpu} tone="red" /> },
+      ]} />
 
       {showForm && (
         <SectionCard title="Add a device" description="Identify by MAC address, it stays constant even when the IP changes.">

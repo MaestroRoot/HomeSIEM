@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts'
 import { PageHeader, SectionCard, StatCard, StatusPill, TableWrap, ConfirmModal, cx } from '@/components/ui'
+import SortableCardGrid from '@/components/dashboard/SortableCards'
 import { api } from '@/lib/api'
 import { pollWhenVisible } from '@/lib/usePolling'
 import type { SecurityEventRow, StatsOverview, Verdict } from '@/lib/types'
@@ -170,30 +171,37 @@ export default function Overview() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {orderedKpis.map((k) => {
+          <SortableCardGrid
+            pageKey="overview.kpis"
+            cols="sm:grid-cols-2 lg:grid-cols-4"
+            cards={orderedKpis.map((k) => {
               const isPinned = pinned.includes(k.id)
-              return (
-                <div key={k.id} className="group/kpi relative">
-                  {k.node}
-                  <button
-                    type="button"
-                    onClick={() => togglePin(k.id)}
-                    title={isPinned ? 'Unpin' : 'Pin to top'}
-                    className={cx(
-                      'absolute bottom-2 right-2 grid h-6 w-6 place-items-center rounded-md transition-opacity',
-                      isPinned ? 'text-brand-600 opacity-100' : 'text-slate-300 opacity-0 hover:text-slate-500 group-hover/kpi:opacity-100',
-                    )}
-                  >
-                    {isPinned ? <Pin size={13} className="fill-current" /> : <PinOff size={13} />}
-                  </button>
-                </div>
-              )
+              return {
+                id: k.id,
+                label: String(k.node.props.label ?? k.id),
+                node: (
+                  <div className="group/kpi relative">
+                    {k.node}
+                    <button
+                      type="button"
+                      onClick={() => togglePin(k.id)}
+                      title={isPinned ? 'Unpin' : 'Pin to top'}
+                      className={cx(
+                        'absolute bottom-2 right-2 grid h-6 w-6 place-items-center rounded-md transition-opacity',
+                        isPinned ? 'text-brand-600 opacity-100' : 'text-slate-300 opacity-0 hover:text-slate-500 group-hover/kpi:opacity-100',
+                      )}
+                    >
+                      {isPinned ? <Pin size={13} className="fill-current" /> : <PinOff size={13} />}
+                    </button>
+                  </div>
+                ),
+              }
             })}
-          </div>
+          />
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            <SectionCard title="Events over time" description="Per hour, last 24 hours" className="lg:col-span-2">
+          <SortableCardGrid pageKey="overview.events" cols="lg:grid-cols-3" maxCols={3} cards={[
+            { id: 'events', span: 2, label: 'Events over time', node: (
+            <SectionCard title="Events over time" description="Per hour, last 24 hours">
               <div className="h-72 p-4">
                 {stats && stats.overTime.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
@@ -217,7 +225,8 @@ export default function Overview() {
                 )}
               </div>
             </SectionCard>
-
+            ) },
+            { id: 'verdict', label: 'Verdict distribution', node: (
             <SectionCard title="Verdict distribution" description="Share of all events">
               <div className="h-72 p-4">
                 {verdictPie.length > 0 ? (
@@ -237,9 +246,11 @@ export default function Overview() {
                 )}
               </div>
             </SectionCard>
-          </div>
+            ) },
+          ]} />
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <SortableCardGrid pageKey="overview.domains" cols="lg:grid-cols-2" maxCols={2} cards={[
+            { id: 'domains', label: 'Top domains', node: (
             <SectionCard title="Top domains" description="Most looked-up destinations">
               {stats && stats.topDomains.length > 0 ? (
                 <ul className="divide-y divide-slate-100">
@@ -257,7 +268,8 @@ export default function Overview() {
                 <EmptyRow />
               )}
             </SectionCard>
-
+            ) },
+            { id: 'suspicious', label: 'Suspicious indicators', node: (
             <SectionCard title="Suspicious indicators" description="Flagged by threat intelligence">
               {stats && stats.suspicious.length > 0 ? (
                 <ul className="divide-y divide-slate-100">
@@ -277,7 +289,8 @@ export default function Overview() {
                 <EmptyRow message="Nothing flagged yet, that is the good case." />
               )}
             </SectionCard>
-          </div>
+            ) },
+          ]} />
 
           <SectionCard
             title="Recent activity"
